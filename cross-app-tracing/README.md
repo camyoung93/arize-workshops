@@ -12,6 +12,7 @@ Two files. No Docker. No npm. No framework.
 
 ```bash
 cd cross-app-tracing
+python -m venv .venv && source .venv/bin/activate
 cp .env.example .env   # fill in your keys
 pip install -r requirements.txt
 python app.py
