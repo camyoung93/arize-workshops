@@ -12,8 +12,7 @@ INSTRUMENTATION TYPE 2 (Frontend):
 Run: python app.py → open http://localhost:8000
 """
 
-import os, time
-from contextlib import asynccontextmanager
+import os
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -31,17 +30,12 @@ from opentelemetry.sdk.util.instrumentation import InstrumentationScope
 
 
 # ---------------------------------------------------------------------------
-# Tracing setup (deferred to startup so import-time spans don't poison batch)
+# Tracing setup — runs at module level (outside async context) so the gRPC
+# channel is created in the main thread. batch=False means each span exports
+# individually, so no init-time span can poison a batch.
 # ---------------------------------------------------------------------------
 
-_tracing_initialized = False
-
-def init_tracing():
-    global _tracing_initialized
-    if _tracing_initialized:
-        return
-    _tracing_initialized = True
-
+def _init_tracing():
     from arize.otel import register
     from openinference.instrumentation.openai import OpenAIInstrumentor
 
@@ -56,6 +50,8 @@ def init_tracing():
     register(space_id=space_id, api_key=api_key, project_name=project, batch=False)
     OpenAIInstrumentor().instrument()
     print(f"Tracing initialized → project: {project}")
+
+_init_tracing()
 
 
 # ---------------------------------------------------------------------------
@@ -97,12 +93,7 @@ def create_browser_span(trace_id_hex, span_id_hex, name, start_ms, end_ms, statu
 # FastAPI app
 # ---------------------------------------------------------------------------
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    init_tracing()
-    yield
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 client = OpenAI()
