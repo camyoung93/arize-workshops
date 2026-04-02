@@ -136,6 +136,7 @@ async def chat(req: ChatRequest, raw: Request):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         otel_context.detach(token)
+        trace_api.get_tracer_provider().force_flush()
 
 
 @app.post("/telemetry")
@@ -144,6 +145,7 @@ async def telemetry(data: TelemetryData):
         data.trace_id, data.span_id, data.name,
         data.start_time_ms, data.end_time_ms, data.http_status_code,
     )
+    trace_api.get_tracer_provider().force_flush()
     return {"ok": ok}
 
 
