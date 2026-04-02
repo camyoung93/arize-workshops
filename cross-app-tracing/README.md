@@ -28,8 +28,9 @@ python app.py
 
 ### Type 2: Frontend (`index.html`)
 
-- Vanilla JS generates a random trace ID + span ID
-- Builds a W3C `traceparent` header and attaches it to every fetch
+- Vanilla JS generates a unique trace ID and span ID per the
+  [W3C Trace Context](https://www.w3.org/TR/trace-context/) spec
+- Builds a `traceparent` header and attaches it to every fetch
 - After the response, POSTs the span data to `/telemetry`
 
 ### How they connect
