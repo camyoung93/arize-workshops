@@ -34,7 +34,14 @@ from opentelemetry.sdk.util.instrumentation import InstrumentationScope
 # Tracing setup (deferred to startup so import-time spans don't poison batch)
 # ---------------------------------------------------------------------------
 
+_tracing_initialized = False
+
 def init_tracing():
+    global _tracing_initialized
+    if _tracing_initialized:
+        return
+    _tracing_initialized = True
+
     from arize.otel import register
     from openinference.instrumentation.openai import OpenAIInstrumentor
 
@@ -46,7 +53,7 @@ def init_tracing():
         print("Warning: ARIZE_SPACE_ID / ARIZE_API_KEY not set — tracing disabled")
         return
 
-    register(space_id=space_id, api_key=api_key, project_name=project)
+    register(space_id=space_id, api_key=api_key, project_name=project, batch=False)
     OpenAIInstrumentor().instrument()
     print(f"Tracing initialized → project: {project}")
 
