@@ -1,0 +1,1937 @@
+[
+  {
+    "id": "eval_001",
+    "question": "How many articles were published in total?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(*) AS article_count FROM articles",
+    "expected_answer": "There are 200 articles in total.",
+    "must_include": [
+      "200"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_002",
+    "question": "How many authors are in the database?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(*) AS author_count FROM authors",
+    "expected_answer": "There are 20 authors.",
+    "must_include": [
+      "20"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_003",
+    "question": "List all revenue segments.",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT DISTINCT segment FROM revenue ORDER BY segment",
+    "expected_answer": "The revenue segments are: digital_ads, events, licensing, print_ads, and subscriptions.",
+    "must_include": [
+      "digital_ads",
+      "events",
+      "licensing",
+      "print_ads",
+      "subscriptions"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_004",
+    "question": "What sections appear in the traffic data?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT DISTINCT section FROM traffic ORDER BY section",
+    "expected_answer": "The traffic data covers: Markets, Opinion, Technology, and Wealth.",
+    "must_include": [
+      "Markets",
+      "Technology"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_005",
+    "question": "What is Sarah Chen's beat?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT beat FROM authors WHERE name = 'Sarah Chen'",
+    "expected_answer": "Sarah Chen covers the Technology beat.",
+    "must_include": [
+      "Technology"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_006",
+    "question": "How many articles were published in 2024?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM articles WHERE publish_date >= '2024-01-01' AND publish_date < '2025-01-01'",
+    "expected_answer": "Approximately 100 articles were published in 2024.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Exact count depends on seed; answer should be in the ballpark.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_007",
+    "question": "How many articles were published in 2023?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM articles WHERE publish_date >= '2023-01-01' AND publish_date < '2024-01-01'",
+    "expected_answer": "Approximately 100 articles were published in 2023.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_008",
+    "question": "Which author has the most articles published?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT name, articles_published FROM authors WHERE articles_published = (SELECT MAX(articles_published) FROM authors)",
+    "expected_answer": "Diana Walsh has the most articles published with 28.",
+    "must_include": [
+      "Diana Walsh",
+      "28"
+    ],
+    "must_not_include": [],
+    "notes": "Less efficient golden SQL uses subquery instead of ORDER BY ... LIMIT 1.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_009",
+    "question": "What was total revenue in Q2 2024?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT SUM(amount_usd) AS total_revenue FROM revenue WHERE quarter = 'Q2' AND year = 2024",
+    "expected_answer": "Total revenue in Q2 2024 was approximately $10.5 million across all segments.",
+    "must_include": [
+      "Q2 2024"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_010",
+    "question": "What traffic sources are tracked?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT DISTINCT source FROM traffic ORDER BY source",
+    "expected_answer": "Traffic sources tracked are: direct, newsletter, organic, referral, and social.",
+    "must_include": [
+      "organic",
+      "social",
+      "direct",
+      "referral",
+      "newsletter"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_011",
+    "question": "What is the average word count across all articles?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT AVG(word_count) AS avg_word_count FROM articles",
+    "expected_answer": "The average word count across all articles is approximately 900 words.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_012",
+    "question": "When did James Whitaker join?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT join_date FROM authors WHERE name = 'James Whitaker'",
+    "expected_answer": "James Whitaker joined on 2015-07-22.",
+    "must_include": [
+      "2015-07-22"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_013",
+    "question": "List all authors who cover the Markets beat.",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT name FROM authors WHERE beat = 'Markets' ORDER BY name",
+    "expected_answer": "Markets beat authors: Anthony Davis, David Park, Diana Walsh, and James Whitaker.",
+    "must_include": [
+      "James Whitaker",
+      "Diana Walsh"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_014",
+    "question": "What was the licensing revenue in Q1 2023?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT amount_usd FROM revenue WHERE segment = 'licensing' AND quarter = 'Q1' AND year = 2023",
+    "expected_answer": "Licensing revenue in Q1 2023 was approximately $600,000.",
+    "must_include": [
+      "licensing",
+      "Q1 2023"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_015",
+    "question": "How many rows are in the traffic table?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(*) AS row_count FROM traffic",
+    "expected_answer": "The traffic table contains 1,830 rows (365 days times 5 sources).",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Exact count depends on seed.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_016",
+    "question": "What is the most recent article publish date?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT MAX(publish_date) AS latest FROM articles",
+    "expected_answer": "The most recent article was published in late December 2024.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_017",
+    "question": "What is the earliest article publish date?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT MIN(publish_date) AS earliest FROM articles",
+    "expected_answer": "The earliest article was published in early January 2023.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_018",
+    "question": "How many distinct sections are in the articles table?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(DISTINCT section) AS section_count FROM articles",
+    "expected_answer": "There are 4 distinct sections in the articles table.",
+    "must_include": [
+      "4"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_019",
+    "question": "What is the highest single-quarter revenue amount recorded?",
+    "category": "simple",
+    "difficulty": "medium",
+    "expected_sql": "SELECT MAX(amount_usd) AS max_revenue FROM revenue",
+    "expected_answer": "The highest single-quarter revenue amount is approximately $5 million, from the subscriptions segment.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_020",
+    "question": "Which author joined most recently?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT name, join_date FROM authors WHERE join_date = (SELECT MAX(join_date) FROM authors)",
+    "expected_answer": "Olivia Brooks joined most recently, on 2022-03-08.",
+    "must_include": [
+      "Olivia Brooks"
+    ],
+    "must_not_include": [],
+    "notes": "Uses subquery instead of ORDER BY join_date DESC LIMIT 1.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_021",
+    "question": "How many quarters of revenue data are available?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(DISTINCT quarter || '-' || year) AS quarter_count FROM revenue",
+    "expected_answer": "There are 8 quarters of revenue data, from Q1 2023 through Q4 2024.",
+    "must_include": [
+      "8"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_022",
+    "question": "What is the total number of articles in the Opinion section?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM articles WHERE section = 'Opinion'",
+    "expected_answer": "There are approximately 30 articles in the Opinion section.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_023",
+    "question": "Show me the revenue for events in Q3 2024.",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT amount_usd FROM revenue WHERE segment = 'events' AND quarter = 'Q3' AND year = 2024",
+    "expected_answer": "Events revenue in Q3 2024 was approximately $950,000.",
+    "must_include": [
+      "events",
+      "Q3 2024"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_024",
+    "question": "What beats do the authors cover?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT DISTINCT beat FROM authors ORDER BY beat",
+    "expected_answer": "Authors cover: ESG, Energy, Healthcare, Markets, Politics, Real Estate, Technology, and Wealth.",
+    "must_include": [
+      "Technology",
+      "Markets",
+      "ESG"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_025",
+    "question": "How many articles have a word count over 1500?",
+    "category": "simple",
+    "difficulty": "medium",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM articles WHERE word_count > 1500",
+    "expected_answer": "There are approximately 20-30 articles with a word count over 1,500.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_026",
+    "question": "What is the minimum word count of any article?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT MIN(word_count) AS min_wc FROM articles",
+    "expected_answer": "The minimum word count is approximately 350 words.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_027",
+    "question": "How many authors have published more than 15 articles?",
+    "category": "simple",
+    "difficulty": "medium",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM authors WHERE articles_published > 15",
+    "expected_answer": "There are 6 authors who have published more than 15 articles.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_028",
+    "question": "What was the total print_ads revenue in 2024?",
+    "category": "simple",
+    "difficulty": "medium",
+    "expected_sql": "SELECT SUM(amount_usd) AS total FROM revenue WHERE segment = 'print_ads' AND year = 2024",
+    "expected_answer": "Total print_ads revenue in 2024 was approximately $7 million, reflecting a declining trend.",
+    "must_include": [
+      "print_ads",
+      "2024"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_029",
+    "question": "List all authors sorted by join date, oldest first.",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT name, join_date FROM authors ORDER BY join_date ASC",
+    "expected_answer": "The earliest-joining author is Diana Walsh (2014-05-16), followed by James Whitaker and Anthony Davis.",
+    "must_include": [
+      "Diana Walsh"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_030",
+    "question": "What is the average page_views from the traffic table?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT AVG(page_views) AS avg_views FROM traffic",
+    "expected_answer": "The average daily page views across all sources and sections is approximately 25,000-30,000.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_031",
+    "question": "How many revenue records exist for 2023?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM revenue WHERE year = 2023",
+    "expected_answer": "There are 20 revenue records for 2023 (4 quarters times 5 segments).",
+    "must_include": [
+      "20"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_032",
+    "question": "What was the subscriptions revenue in Q4 2024?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT amount_usd FROM revenue WHERE segment = 'subscriptions' AND quarter = 'Q4' AND year = 2024",
+    "expected_answer": "Subscriptions revenue in Q4 2024 was approximately $4.9 million, reflecting the plateauing trend.",
+    "must_include": [
+      "subscriptions",
+      "Q4 2024"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_033",
+    "question": "How many articles are in the Technology section?",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM articles WHERE section = 'Technology'",
+    "expected_answer": "There are approximately 30-40 articles in the Technology section.",
+    "must_include": [
+      "Technology"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_034",
+    "question": "Show me all authors on the Wealth beat.",
+    "category": "simple",
+    "difficulty": "easy",
+    "expected_sql": "SELECT name FROM authors WHERE beat = 'Wealth' ORDER BY name",
+    "expected_answer": "Wealth beat authors: Nina Patel, Olivia Brooks, and Priya Sharma.",
+    "must_include": [
+      "Priya Sharma"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_035",
+    "question": "What is the total digital_ads revenue across all quarters?",
+    "category": "simple",
+    "difficulty": "medium",
+    "expected_sql": "SELECT SUM(amount_usd) AS total FROM revenue WHERE segment = 'digital_ads'",
+    "expected_answer": "Total digital_ads revenue across all 8 quarters is approximately $17 million, with a strong growth trend of +8% QoQ.",
+    "must_include": [
+      "digital_ads"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_036",
+    "question": "What is the total revenue by segment for 2024?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT segment, SUM(amount_usd) AS total_revenue FROM revenue WHERE year = 2024 GROUP BY segment ORDER BY total_revenue DESC",
+    "expected_answer": "In 2024, subscriptions led with approximately $18.5M, followed by digital_ads at around $9.5M, print_ads near $7M, events around $3.8M, and licensing at roughly $2.6M.",
+    "must_include": [
+      "subscriptions",
+      "digital_ads"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_037",
+    "question": "Which revenue segment had the highest total in 2024?",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT segment, SUM(amount_usd) AS total FROM revenue WHERE year = 2024 GROUP BY segment ORDER BY total DESC LIMIT 1",
+    "expected_answer": "Subscriptions was the highest revenue segment in 2024.",
+    "must_include": [
+      "subscriptions"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_038",
+    "question": "Rank the top 5 authors by number of articles published.",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT name, articles_published FROM authors ORDER BY articles_published DESC LIMIT 5",
+    "expected_answer": "Top 5: Diana Walsh (28), James Whitaker (25), Sarah Chen (22), Anthony Davis (20), David Park (18).",
+    "must_include": [
+      "Diana Walsh",
+      "James Whitaker"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_039",
+    "question": "What is the average revenue per segment across all quarters?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT segment, AVG(amount_usd) AS avg_revenue FROM revenue GROUP BY segment ORDER BY avg_revenue DESC",
+    "expected_answer": "Subscriptions averages the highest per quarter at roughly $4.6M, while licensing averages the lowest at around $650K.",
+    "must_include": [
+      "subscriptions"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_040",
+    "question": "How many articles were published per section?",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT section, COUNT(*) AS article_count FROM articles GROUP BY section ORDER BY article_count DESC",
+    "expected_answer": "Markets has the most articles, followed by Technology, Opinion, and Wealth.",
+    "must_include": [
+      "Markets"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_041",
+    "question": "What is the average word count by section?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT section, AVG(word_count) AS avg_wc FROM articles GROUP BY section ORDER BY avg_wc DESC",
+    "expected_answer": "Technology tends to have the longest articles on average, while Markets articles are typically shorter.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_042",
+    "question": "What was the total page views by traffic source for 2024?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT source, SUM(page_views) AS total_views FROM traffic GROUP BY source ORDER BY total_views DESC",
+    "expected_answer": "Organic traffic leads with the highest total page views, followed by direct, social, newsletter, and referral.",
+    "must_include": [
+      "organic"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_043",
+    "question": "Show quarterly revenue trends for digital_ads from Q1 2023 to Q4 2024.",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT quarter, year, amount_usd FROM revenue WHERE segment = 'digital_ads' ORDER BY year, quarter",
+    "expected_answer": "Digital ads revenue shows consistent growth of approximately 8% quarter-over-quarter, rising from about $1.8M in Q1 2023 to around $3M by Q4 2024.",
+    "must_include": [
+      "digital_ads",
+      "growth"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_044",
+    "question": "Compare total 2023 revenue to total 2024 revenue.",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT (SELECT SUM(amount_usd) FROM revenue WHERE year = 2023) AS total_2023, (SELECT SUM(amount_usd) FROM revenue WHERE year = 2024) AS total_2024",
+    "expected_answer": "Total revenue grew from approximately $39M in 2023 to roughly $42M in 2024, driven by digital ads and subscriptions growth offsetting print ads decline.",
+    "must_include": [
+      "2023",
+      "2024"
+    ],
+    "must_not_include": [],
+    "notes": "Less efficient: uses subqueries instead of CASE WHEN with GROUP BY.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_045",
+    "question": "What is the month-by-month article count for 2024?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT strftime('%Y-%m', publish_date) AS month, COUNT(*) AS cnt FROM articles WHERE publish_date >= '2024-01-01' AND publish_date < '2025-01-01' GROUP BY month ORDER BY month",
+    "expected_answer": "Article output in 2024 was distributed across months, typically 7-12 articles per month.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_046",
+    "question": "Which traffic source has the highest average unique visitors?",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT source, AVG(unique_visitors) AS avg_visitors FROM traffic GROUP BY source ORDER BY avg_visitors DESC LIMIT 1",
+    "expected_answer": "Organic search has the highest average unique visitors per day.",
+    "must_include": [
+      "organic"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_047",
+    "question": "What is the total revenue per quarter across all segments?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT quarter, year, SUM(amount_usd) AS total FROM revenue GROUP BY quarter, year ORDER BY year, quarter",
+    "expected_answer": "Quarterly total revenue ranges from roughly $9.5M in Q1 2023 to around $11M in Q4 2024, showing an overall upward trend.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_048",
+    "question": "How many articles did each author publish (using the articles table)?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT a.name, COUNT(ar.id) AS article_count FROM authors a LEFT JOIN articles ar ON a.id = ar.author_id GROUP BY a.id, a.name ORDER BY article_count DESC",
+    "expected_answer": "The most prolific authors in the articles table are led by Diana Walsh and James Whitaker.",
+    "must_include": [
+      "Diana Walsh"
+    ],
+    "must_not_include": [],
+    "notes": "Uses LEFT JOIN to include authors with zero articles.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_049",
+    "question": "What is the average daily page views by day of week?",
+    "category": "aggregation",
+    "difficulty": "hard",
+    "expected_sql": "SELECT CASE CAST(strftime('%w', date) AS INTEGER) WHEN 0 THEN 'Sunday' WHEN 1 THEN 'Monday' WHEN 2 THEN 'Tuesday' WHEN 3 THEN 'Wednesday' WHEN 4 THEN 'Thursday' WHEN 5 THEN 'Friday' WHEN 6 THEN 'Saturday' END AS day_name, AVG(page_views) AS avg_views FROM traffic GROUP BY strftime('%w', date) ORDER BY CAST(strftime('%w', date) AS INTEGER)",
+    "expected_answer": "Weekdays (Monday through Thursday) see the highest average page views, with a noticeable drop on Friday and a significant dip on weekends.",
+    "must_include": [
+      "Monday",
+      "weekend"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_050",
+    "question": "What is the quarter-over-quarter revenue growth rate for print_ads?",
+    "category": "aggregation",
+    "difficulty": "hard",
+    "expected_sql": "SELECT r1.quarter || ' ' || r1.year AS period, r1.amount_usd, ROUND((r1.amount_usd - r2.amount_usd) / r2.amount_usd * 100, 1) AS growth_pct FROM revenue r1 JOIN revenue r2 ON r1.segment = r2.segment AND ((r1.year = r2.year AND CASE r1.quarter WHEN 'Q2' THEN 'Q1' WHEN 'Q3' THEN 'Q2' WHEN 'Q4' THEN 'Q3' END = r2.quarter) OR (r1.quarter = 'Q1' AND r1.year = r2.year + 1 AND r2.quarter = 'Q4')) WHERE r1.segment = 'print_ads' ORDER BY r1.year, r1.quarter",
+    "expected_answer": "Print ads revenue declines approximately 5% each quarter, falling from about $2.2M in Q1 2023 to under $1.6M by Q4 2024.",
+    "must_include": [
+      "print_ads",
+      "declin"
+    ],
+    "must_not_include": [],
+    "notes": "Complex self-join for QoQ growth. Model may simplify.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_051",
+    "question": "Which section gets the most total traffic?",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT section, SUM(page_views) AS total_views FROM traffic GROUP BY section ORDER BY total_views DESC LIMIT 1",
+    "expected_answer": "Markets receives the most total traffic.",
+    "must_include": [
+      "Markets"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_052",
+    "question": "What is the total revenue by year?",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT year, SUM(amount_usd) AS total FROM revenue GROUP BY year ORDER BY year",
+    "expected_answer": "Total revenue was approximately $39M in 2023 and $42M in 2024.",
+    "must_include": [
+      "2023",
+      "2024"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_053",
+    "question": "Show the revenue distribution by segment for Q4 2024.",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT segment, amount_usd, ROUND(amount_usd * 100.0 / SUM(amount_usd) OVER (), 1) AS pct FROM revenue WHERE quarter = 'Q4' AND year = 2024 ORDER BY amount_usd DESC",
+    "expected_answer": "In Q4 2024, subscriptions dominates at roughly 45% of total revenue, followed by digital_ads and print_ads.",
+    "must_include": [
+      "subscriptions",
+      "Q4 2024"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_054",
+    "question": "What is the average word count for articles published in each year?",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT strftime('%Y', publish_date) AS year, AVG(word_count) AS avg_wc FROM articles GROUP BY year ORDER BY year",
+    "expected_answer": "Average word count is similar across both years, around 850-950 words.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_055",
+    "question": "How many articles were published per quarter in 2024?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT CASE WHEN publish_date BETWEEN '2024-01-01' AND '2024-03-31' THEN 'Q1' WHEN publish_date BETWEEN '2024-04-01' AND '2024-06-30' THEN 'Q2' WHEN publish_date BETWEEN '2024-07-01' AND '2024-09-30' THEN 'Q3' ELSE 'Q4' END AS quarter, COUNT(*) AS cnt FROM articles WHERE publish_date >= '2024-01-01' AND publish_date < '2025-01-01' GROUP BY quarter ORDER BY quarter",
+    "expected_answer": "Article output in 2024 was roughly evenly distributed across quarters, approximately 25 articles per quarter.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_056",
+    "question": "What is the total unique visitors by section?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT section, SUM(unique_visitors) AS total_visitors FROM traffic GROUP BY section ORDER BY total_visitors DESC",
+    "expected_answer": "Markets leads in total unique visitors, followed by Technology.",
+    "must_include": [
+      "Markets"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_057",
+    "question": "Show the top 3 revenue segments by total 2024 earnings.",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT segment, SUM(amount_usd) AS total FROM revenue WHERE year = 2024 GROUP BY segment ORDER BY total DESC LIMIT 3",
+    "expected_answer": "Top 3 revenue segments in 2024: subscriptions, digital_ads, and print_ads.",
+    "must_include": [
+      "subscriptions",
+      "digital_ads",
+      "print_ads"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_058",
+    "question": "What was the maximum daily page views recorded?",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT MAX(page_views) AS max_views FROM traffic",
+    "expected_answer": "The maximum daily page views recorded was approximately 55,000-60,000.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_059",
+    "question": "Show the number of authors per beat.",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT beat, COUNT(*) AS cnt FROM authors GROUP BY beat ORDER BY cnt DESC",
+    "expected_answer": "Markets and Technology have the most authors (4 each), while Real Estate has the fewest (1).",
+    "must_include": [
+      "Markets",
+      "Technology"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_060",
+    "question": "What was the total newsletter traffic in 2024?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT SUM(page_views) AS total_views FROM traffic WHERE source = 'newsletter'",
+    "expected_answer": "Total newsletter-driven page views in 2024 were approximately 6.5 million.",
+    "must_include": [
+      "newsletter"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_061",
+    "question": "What percentage of total revenue comes from digital_ads in 2024?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT ROUND((SELECT SUM(amount_usd) FROM revenue WHERE segment = 'digital_ads' AND year = 2024) * 100.0 / (SELECT SUM(amount_usd) FROM revenue WHERE year = 2024), 1) AS pct",
+    "expected_answer": "Digital ads accounts for approximately 22-25% of total 2024 revenue.",
+    "must_include": [
+      "digital_ads"
+    ],
+    "must_not_include": [],
+    "notes": "Less efficient golden SQL; model could use a single GROUP BY.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_062",
+    "question": "How has events revenue changed from 2023 to 2024?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT year, SUM(amount_usd) AS total FROM revenue WHERE segment = 'events' GROUP BY year ORDER BY year",
+    "expected_answer": "Events revenue grew from approximately $3.4M in 2023 to $3.8M in 2024, reflecting steady 4% QoQ growth.",
+    "must_include": [
+      "events",
+      "2023",
+      "2024"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_063",
+    "question": "Which month in 2024 had the highest total traffic?",
+    "category": "aggregation",
+    "difficulty": "hard",
+    "expected_sql": "SELECT strftime('%Y-%m', date) AS month, SUM(page_views) AS total FROM traffic GROUP BY month ORDER BY total DESC LIMIT 1",
+    "expected_answer": "The month with the highest total traffic was likely in Q4 2024 due to the annual upward trend.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_064",
+    "question": "Show quarterly subscriptions revenue for 2023 and 2024.",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT quarter, year, amount_usd FROM revenue WHERE segment = 'subscriptions' ORDER BY year, quarter",
+    "expected_answer": "Subscriptions revenue remained relatively flat at around $4.5M-$4.9M per quarter, growing only ~1% QoQ.",
+    "must_include": [
+      "subscriptions",
+      "plateau"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_065",
+    "question": "What is the average article word count by author beat?",
+    "category": "aggregation",
+    "difficulty": "medium",
+    "expected_sql": "SELECT au.beat, AVG(ar.word_count) AS avg_wc FROM authors au JOIN articles ar ON au.id = ar.author_id GROUP BY au.beat ORDER BY avg_wc DESC",
+    "expected_answer": "Authors covering different beats produce articles of varying lengths; Technology beat authors tend to write longer pieces.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_066",
+    "question": "What is the longest article by word count?",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT title, word_count, section FROM articles ORDER BY word_count DESC LIMIT 1",
+    "expected_answer": "The longest article has approximately 2,000 words and is in the Technology section.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_067",
+    "question": "How many distinct dates have traffic data?",
+    "category": "aggregation",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(DISTINCT date) AS day_count FROM traffic",
+    "expected_answer": "There are 366 distinct dates with traffic data (all of 2024).",
+    "must_include": [
+      "366"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_068",
+    "question": "What is the median revenue amount across all records?",
+    "category": "aggregation",
+    "difficulty": "hard",
+    "expected_sql": "SELECT amount_usd FROM revenue ORDER BY amount_usd LIMIT 1 OFFSET (SELECT COUNT(*) FROM revenue) / 2",
+    "expected_answer": "The median revenue amount is approximately $1.5-2M, reflecting the wide range between licensing (~$600K) and subscriptions (~$4.5M+).",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "SQLite doesn't have a native MEDIAN; this approximation is acceptable.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_069",
+    "question": "Which authors in the Technology beat wrote articles in the Opinion section?",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT DISTINCT au.name FROM authors au JOIN articles ar ON au.id = ar.author_id WHERE au.beat = 'Technology' AND ar.section = 'Opinion' ORDER BY au.name",
+    "expected_answer": "Technology beat authors who also wrote Opinion pieces include Sarah Chen, Emma Rodriguez, and others.",
+    "must_include": [
+      "Technology",
+      "Opinion"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_070",
+    "question": "What was the total revenue in quarters where more than 25 articles were published?",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT r.quarter, r.year, SUM(r.amount_usd) AS total_revenue FROM revenue r WHERE r.quarter || '-' || r.year IN (SELECT CASE WHEN publish_date BETWEEN (year || '-01-01') AND (year || '-03-31') THEN 'Q1' WHEN publish_date BETWEEN (year || '-04-01') AND (year || '-06-30') THEN 'Q2' WHEN publish_date BETWEEN (year || '-07-01') AND (year || '-09-30') THEN 'Q3' ELSE 'Q4' END || '-' || strftime('%Y', publish_date) FROM articles GROUP BY 1 HAVING COUNT(*) > 25) GROUP BY r.quarter, r.year ORDER BY r.year, r.quarter",
+    "expected_answer": "Quarters with more than 25 articles published had total revenues ranging from $9M to $11M.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Complex correlation between articles and revenue. SQL may vary significantly.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_071",
+    "question": "Show me the top 3 authors by article count along with their average word count.",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT au.name, COUNT(ar.id) AS article_count, ROUND(AVG(ar.word_count)) AS avg_wc FROM authors au JOIN articles ar ON au.id = ar.author_id GROUP BY au.id, au.name ORDER BY article_count DESC LIMIT 3",
+    "expected_answer": "The top 3 authors by article count are Diana Walsh, James Whitaker, and Sarah Chen, with average word counts varying by beat.",
+    "must_include": [
+      "Diana Walsh"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_072",
+    "question": "Compare the average daily traffic for Markets vs Technology sections.",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT section, ROUND(AVG(page_views)) AS avg_daily_views FROM traffic WHERE section IN ('Markets', 'Technology') GROUP BY section",
+    "expected_answer": "Markets sees higher average daily traffic than Technology, reflecting its larger weight in the distribution.",
+    "must_include": [
+      "Markets",
+      "Technology"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_073",
+    "question": "Which section had the most articles and how does its traffic compare to other sections?",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT ar.section, COUNT(DISTINCT ar.id) AS article_count, SUM(t.page_views) AS total_traffic FROM articles ar JOIN traffic t ON ar.section = t.section GROUP BY ar.section ORDER BY article_count DESC",
+    "expected_answer": "Markets leads in both article count and total traffic. There is a positive correlation between content volume and traffic.",
+    "must_include": [
+      "Markets"
+    ],
+    "must_not_include": [],
+    "notes": "Join between articles and traffic on section. Traffic data is daily while articles are individual records, so the join is approximate.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_074",
+    "question": "Show authors who joined before 2019 and their total article count from the articles table.",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT au.name, au.join_date, COUNT(ar.id) AS article_count FROM authors au LEFT JOIN articles ar ON au.id = ar.author_id WHERE au.join_date < '2019-01-01' GROUP BY au.id, au.name ORDER BY article_count DESC",
+    "expected_answer": "Pre-2019 authors like Diana Walsh, James Whitaker, and Anthony Davis are among the most productive.",
+    "must_include": [
+      "Diana Walsh"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_075",
+    "question": "What is the relationship between article output in the Markets section and organic traffic?",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT strftime('%m', ar.publish_date) AS month, COUNT(ar.id) AS article_count, SUM(t.page_views) AS organic_views FROM articles ar JOIN traffic t ON strftime('%m', ar.publish_date) = strftime('%m', t.date) AND t.source = 'organic' AND t.section = 'Markets' WHERE ar.section = 'Markets' AND strftime('%Y', ar.publish_date) = '2024' AND strftime('%Y', t.date) = '2024' GROUP BY month ORDER BY month",
+    "expected_answer": "There appears to be a positive relationship between Markets article output and organic traffic, though traffic is also influenced by the annual upward trend.",
+    "must_include": [
+      "Markets",
+      "organic"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_076",
+    "question": "List authors whose articles have an average word count above 1000.",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT au.name, au.beat, ROUND(AVG(ar.word_count)) AS avg_wc FROM authors au JOIN articles ar ON au.id = ar.author_id GROUP BY au.id, au.name, au.beat HAVING AVG(ar.word_count) > 1000 ORDER BY avg_wc DESC",
+    "expected_answer": "Several authors, particularly those covering Technology, tend to write longer articles averaging over 1,000 words.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_077",
+    "question": "How does digital ad revenue compare to total traffic volume over 2024?",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT r.quarter, r.amount_usd AS digital_ads_revenue, (SELECT SUM(page_views) FROM traffic WHERE date BETWEEN CASE r.quarter WHEN 'Q1' THEN '2024-01-01' WHEN 'Q2' THEN '2024-04-01' WHEN 'Q3' THEN '2024-07-01' WHEN 'Q4' THEN '2024-10-01' END AND CASE r.quarter WHEN 'Q1' THEN '2024-03-31' WHEN 'Q2' THEN '2024-06-30' WHEN 'Q3' THEN '2024-09-30' WHEN 'Q4' THEN '2024-12-31' END) AS quarterly_views FROM revenue r WHERE r.segment = 'digital_ads' AND r.year = 2024 ORDER BY r.quarter",
+    "expected_answer": "Both digital ad revenue and total traffic grew throughout 2024, with digital ads up 8% QoQ and traffic rising 15% annually. The trends are directionally aligned.",
+    "must_include": [
+      "digital_ads",
+      "traffic",
+      "growth"
+    ],
+    "must_not_include": [],
+    "notes": "Complex correlated subquery. Model output may differ structurally.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_078",
+    "question": "Which beat produces the most articles per author on average?",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT au.beat, COUNT(ar.id) * 1.0 / COUNT(DISTINCT au.id) AS avg_articles_per_author FROM authors au JOIN articles ar ON au.id = ar.author_id GROUP BY au.beat ORDER BY avg_articles_per_author DESC",
+    "expected_answer": "Markets beat authors are among the most productive per author, averaging the highest article count per person.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_079",
+    "question": "Show revenue by segment alongside the number of articles published in the same year.",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT r.year, r.segment, SUM(r.amount_usd) AS total_revenue, (SELECT COUNT(*) FROM articles WHERE strftime('%Y', publish_date) = CAST(r.year AS TEXT)) AS article_count FROM revenue r GROUP BY r.year, r.segment ORDER BY r.year, r.segment",
+    "expected_answer": "Each year saw roughly 100 articles published. Revenue varies by segment: subscriptions leads, while licensing is the smallest.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Less efficient correlated subquery repeated per row.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_080",
+    "question": "Which authors wrote articles longer than 1500 words and in which sections?",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT DISTINCT au.name, au.beat, ar.section, ar.word_count FROM authors au JOIN articles ar ON au.id = ar.author_id WHERE ar.word_count > 1500 ORDER BY ar.word_count DESC",
+    "expected_answer": "Long-form articles (>1500 words) come primarily from Technology section authors.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_081",
+    "question": "For each traffic source, show the average page views on weekdays vs weekends.",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT source, CASE WHEN CAST(strftime('%w', date) AS INTEGER) IN (0, 6) THEN 'weekend' ELSE 'weekday' END AS day_type, ROUND(AVG(page_views)) AS avg_views FROM traffic GROUP BY source, day_type ORDER BY source, day_type",
+    "expected_answer": "All traffic sources show significantly higher page views on weekdays compared to weekends. Organic traffic shows the largest weekday/weekend gap.",
+    "must_include": [
+      "weekday",
+      "weekend"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_082",
+    "question": "How many articles did Markets-beat authors publish in the Technology section?",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM articles ar JOIN authors au ON ar.author_id = au.id WHERE au.beat = 'Markets' AND ar.section = 'Technology'",
+    "expected_answer": "Markets-beat authors typically don't write for the Technology section, so the count should be zero or very low.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_083",
+    "question": "Show the quarterly trend: total revenue vs total traffic page views.",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT r.quarter || ' ' || r.year AS period, SUM(r.amount_usd) AS total_revenue, COALESCE((SELECT SUM(page_views) FROM traffic WHERE date BETWEEN CASE r.quarter WHEN 'Q1' THEN r.year || '-01-01' WHEN 'Q2' THEN r.year || '-04-01' WHEN 'Q3' THEN r.year || '-07-01' WHEN 'Q4' THEN r.year || '-10-01' END AND CASE r.quarter WHEN 'Q1' THEN r.year || '-03-31' WHEN 'Q2' THEN r.year || '-06-30' WHEN 'Q3' THEN r.year || '-09-30' WHEN 'Q4' THEN r.year || '-12-31' END), 0) AS total_views FROM revenue r GROUP BY r.quarter, r.year ORDER BY r.year, r.quarter",
+    "expected_answer": "Both revenue and traffic trend upward through 2024. Note that traffic data is only available for 2024, so 2023 quarters show zero traffic.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Traffic is 2024-only; complex correlated subquery.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_084",
+    "question": "Which author has written in the most different sections?",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT au.name, COUNT(DISTINCT ar.section) AS section_count FROM authors au JOIN articles ar ON au.id = ar.author_id GROUP BY au.id, au.name ORDER BY section_count DESC LIMIT 1",
+    "expected_answer": "The most versatile author writes across 2-3 different sections.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_085",
+    "question": "What is the average traffic per section on days when articles were published in that section?",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT ar.section, ROUND(AVG(t.page_views)) AS avg_views_on_pub_days FROM articles ar JOIN traffic t ON ar.section = t.section AND ar.publish_date = t.date GROUP BY ar.section ORDER BY avg_views_on_pub_days DESC",
+    "expected_answer": "Sections tend to see similar traffic on publication days vs non-publication days, since daily traffic is driven more by source and day-of-week patterns.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_086",
+    "question": "Show the top 5 authors by total word count written.",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT au.name, SUM(ar.word_count) AS total_words FROM authors au JOIN articles ar ON au.id = ar.author_id GROUP BY au.id, au.name ORDER BY total_words DESC LIMIT 5",
+    "expected_answer": "The authors with the highest total word output include Diana Walsh and James Whitaker, who are also the most prolific by article count.",
+    "must_include": [
+      "Diana Walsh"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_087",
+    "question": "What fraction of total 2024 traffic came from social media?",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT ROUND(SUM(CASE WHEN source = 'social' THEN page_views ELSE 0 END) * 100.0 / SUM(page_views), 1) AS social_pct FROM traffic",
+    "expected_answer": "Social media accounts for approximately 20% of total 2024 traffic.",
+    "must_include": [
+      "social"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_088",
+    "question": "For each author, show their beat and the total page views their section receives.",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT au.name, au.beat, ar.section, SUM(t.page_views) AS section_views FROM authors au JOIN articles ar ON au.id = ar.author_id JOIN traffic t ON ar.section = t.section GROUP BY au.name, au.beat, ar.section ORDER BY section_views DESC",
+    "expected_answer": "Authors writing for the Markets section benefit from the highest section traffic, while Wealth section authors see lower overall traffic.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Three-table join. Traffic is not directly attributable to individual authors.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_089",
+    "question": "How many articles were published by authors who joined in 2020 or later?",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT COUNT(ar.id) AS cnt FROM articles ar JOIN authors au ON ar.author_id = au.id WHERE au.join_date >= '2020-01-01'",
+    "expected_answer": "Authors who joined in 2020 or later have published approximately 50-60 articles collectively.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_090",
+    "question": "Show the quarterly revenue alongside article count for the same quarter.",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT r.quarter, r.year, SUM(r.amount_usd) AS revenue, (SELECT COUNT(*) FROM articles WHERE (CASE WHEN publish_date BETWEEN r.year || '-01-01' AND r.year || '-03-31' THEN 'Q1' WHEN publish_date BETWEEN r.year || '-04-01' AND r.year || '-06-30' THEN 'Q2' WHEN publish_date BETWEEN r.year || '-07-01' AND r.year || '-09-30' THEN 'Q3' ELSE 'Q4' END) = r.quarter AND strftime('%Y', publish_date) = CAST(r.year AS TEXT)) AS article_count FROM revenue r GROUP BY r.quarter, r.year ORDER BY r.year, r.quarter",
+    "expected_answer": "Each quarter sees roughly 25 articles published and $9-11M in total revenue. The relationship between content volume and revenue is relatively stable.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_091",
+    "question": "Show authors along with their earliest and latest article dates.",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT au.name, MIN(ar.publish_date) AS first_article, MAX(ar.publish_date) AS last_article FROM authors au JOIN articles ar ON au.id = ar.author_id GROUP BY au.id, au.name ORDER BY first_article",
+    "expected_answer": "Authors' publishing spans range from early 2023 to late 2024, with longer-tenured authors having wider date ranges.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_092",
+    "question": "Which section has the highest revenue-per-pageview ratio?",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT t.section, SUM(r.amount_usd) / SUM(t.page_views) AS revenue_per_view FROM traffic t CROSS JOIN revenue r WHERE r.year = 2024 GROUP BY t.section ORDER BY revenue_per_view DESC LIMIT 1",
+    "expected_answer": "This comparison is approximate since revenue is not broken down by section. Using a cross join gives a rough ratio, with smaller-traffic sections showing higher per-view ratios.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Imperfect join\u2014revenue isn't sectioned. Tests model reasoning about data gaps.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_093",
+    "question": "How many Technology beat authors have published more than 10 articles?",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM authors WHERE beat = 'Technology' AND articles_published > 10",
+    "expected_answer": "Three Technology beat authors have published more than 10 articles: Sarah Chen (22), Thomas Hughes (16), and Sophie Laurent (14).",
+    "must_include": [
+      "Sarah Chen"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_094",
+    "question": "Show the weekly traffic pattern averaged across all of 2024.",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT CASE CAST(strftime('%w', date) AS INTEGER) WHEN 0 THEN 'Sun' WHEN 1 THEN 'Mon' WHEN 2 THEN 'Tue' WHEN 3 THEN 'Wed' WHEN 4 THEN 'Thu' WHEN 5 THEN 'Fri' WHEN 6 THEN 'Sat' END AS day, ROUND(AVG(page_views)) AS avg_views FROM traffic GROUP BY strftime('%w', date) ORDER BY CAST(strftime('%w', date) AS INTEGER)",
+    "expected_answer": "Traffic peaks Monday through Thursday, dips on Friday, and drops significantly on weekends (Saturday and Sunday).",
+    "must_include": [
+      "Monday",
+      "weekend"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_095",
+    "question": "In exactly 2 sentences, explain the relationship between article output and page views by section.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT ar.section, COUNT(ar.id) AS articles, SUM(t.page_views) AS views FROM articles ar JOIN traffic t ON ar.section = t.section GROUP BY ar.section",
+    "expected_answer": "Markets leads in both article output and page views, suggesting a positive correlation between content volume and readership. Technology follows as the second most active section, while Opinion and Wealth trail in both metrics.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Must be exactly 2 sentences.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_096",
+    "question": "Summarize 2024 revenue trends but exclude any mention of the events segment.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT segment, SUM(amount_usd) AS total FROM revenue WHERE year = 2024 AND segment != 'events' GROUP BY segment ORDER BY total DESC",
+    "expected_answer": "In 2024, subscriptions remained the dominant revenue source at roughly $18.5M. Digital ads grew strongly at 8% QoQ to approximately $9.5M. Print ads continued its decline to around $7M. Licensing contributed about $2.6M with modest 3% growth.",
+    "must_include": [],
+    "must_not_include": [
+      "events"
+    ],
+    "notes": "Must not mention events at all.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_097",
+    "question": "Explain Q3 traffic patterns as if briefing a non-technical CMO \u2014 no jargon, no raw numbers over 1 million.",
+    "category": "constraint_following",
+    "difficulty": "hard",
+    "expected_sql": "SELECT source, SUM(page_views) AS total_views, ROUND(AVG(page_views)) AS avg_daily FROM traffic WHERE date BETWEEN '2024-07-01' AND '2024-09-30' GROUP BY source ORDER BY total_views DESC",
+    "expected_answer": "In the third quarter, search engines drove the most visitors to our site, followed by people typing our URL directly. Social media and email newsletters each brought in a healthy share. Referrals from other websites contributed a smaller but steady stream. Weekdays consistently outperformed weekends.",
+    "must_include": [],
+    "must_not_include": [
+      "page_views",
+      "million"
+    ],
+    "notes": "No jargon, no numbers over 1M.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_098",
+    "question": "List the top 5 authors by article count, then separately give a 1-sentence summary of overall content production trends. Do not combine these into one paragraph.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT name, articles_published FROM authors ORDER BY articles_published DESC LIMIT 5",
+    "expected_answer": "**Top 5 Authors by Article Count:**\n1. Diana Walsh \u2014 28\n2. James Whitaker \u2014 25\n3. Sarah Chen \u2014 22\n4. Anthony Davis \u2014 20\n5. David Park \u2014 18\n\n**Summary:** Content production across 2023-2024 was concentrated among Markets and Technology beat reporters, with the top 5 authors accounting for over half of all published articles.",
+    "must_include": [
+      "Diana Walsh",
+      "James Whitaker"
+    ],
+    "must_not_include": [],
+    "notes": "Must be two separate sections, not one paragraph.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_099",
+    "question": "Give me a 3-bullet summary of subscription revenue trends. Each bullet must start with the quarter name.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT quarter, year, amount_usd FROM revenue WHERE segment = 'subscriptions' ORDER BY year, quarter",
+    "expected_answer": "- Q1-Q2 2023: Subscriptions started at approximately $4.5M and grew minimally through mid-2023.\n- Q3-Q4 2023: Growth plateaued around the $4.6M mark, with only ~1% quarterly increases.\n- Q1-Q4 2024: The plateau continued through 2024, ending near $4.9M\u2014signaling market saturation.",
+    "must_include": [
+      "Q1",
+      "Q2",
+      "plateau"
+    ],
+    "must_not_include": [],
+    "notes": "Must be exactly 3 bullets, each starting with a quarter reference.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_100",
+    "question": "In one paragraph of no more than 50 words, summarize the overall revenue trend from 2023 to 2024.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT year, SUM(amount_usd) AS total FROM revenue GROUP BY year",
+    "expected_answer": "Revenue grew from $39M in 2023 to $42M in 2024, driven by digital ads (+8% QoQ) and steady subscriptions. Print ads declined 5% quarterly. Overall growth was modest but positive.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Must be one paragraph, max 50 words.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_101",
+    "question": "Describe traffic source distribution using only percentages, no absolute numbers.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT source, ROUND(SUM(page_views) * 100.0 / (SELECT SUM(page_views) FROM traffic), 1) AS pct FROM traffic GROUP BY source ORDER BY pct DESC",
+    "expected_answer": "Organic search accounts for roughly 33% of all traffic, followed by direct at 25%, social at 20%, newsletter at 13%, and referral at 9%.",
+    "must_include": [],
+    "must_not_include": [
+      "page_views"
+    ],
+    "notes": "Only percentages allowed.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_102",
+    "question": "Compare print_ads and digital_ads trends over 2023-2024 in exactly 3 sentences.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT quarter, year, segment, amount_usd FROM revenue WHERE segment IN ('print_ads', 'digital_ads') ORDER BY year, quarter, segment",
+    "expected_answer": "Digital ads revenue grew consistently at 8% quarter-over-quarter, rising from $1.8M in Q1 2023 to approximately $3M by Q4 2024. In contrast, print ads declined 5% each quarter, falling from $2.2M to under $1.6M over the same period. By mid-2024, digital ads had overtaken print ads in quarterly revenue.",
+    "must_include": [
+      "digital_ads",
+      "print_ads"
+    ],
+    "must_not_include": [],
+    "notes": "Exactly 3 sentences.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_103",
+    "question": "Rank all revenue segments by 2024 total and present as a numbered list with no additional commentary.",
+    "category": "constraint_following",
+    "difficulty": "easy",
+    "expected_sql": "SELECT segment, SUM(amount_usd) AS total FROM revenue WHERE year = 2024 GROUP BY segment ORDER BY total DESC",
+    "expected_answer": "1. Subscriptions\n2. Digital Ads\n3. Print Ads\n4. Events\n5. Licensing",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Numbered list, no commentary.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_104",
+    "question": "Explain the traffic weekday vs weekend pattern without using the word 'traffic'.",
+    "category": "constraint_following",
+    "difficulty": "hard",
+    "expected_sql": "SELECT CASE WHEN CAST(strftime('%w', date) AS INTEGER) IN (0, 6) THEN 'weekend' ELSE 'weekday' END AS period, ROUND(AVG(page_views)) AS avg_views FROM traffic GROUP BY period",
+    "expected_answer": "Readership follows a clear weekly cycle: Monday through Thursday sees the highest engagement, Friday begins tapering off, and Saturday-Sunday visitor counts drop to roughly 60-70% of the weekday average.",
+    "must_include": [],
+    "must_not_include": [
+      "traffic"
+    ],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_105",
+    "question": "Summarize author productivity in a table format with columns: Name, Beat, Articles.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT name, beat, articles_published FROM authors ORDER BY articles_published DESC",
+    "expected_answer": "| Name | Beat | Articles |\n|---|---|---|\n| Diana Walsh | Markets | 28 |\n| James Whitaker | Markets | 25 |\n| Sarah Chen | Technology | 22 |\n...",
+    "must_include": [
+      "Diana Walsh",
+      "Markets"
+    ],
+    "must_not_include": [],
+    "notes": "Must use table format.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_106",
+    "question": "Without using any numbers, describe the relative size of each revenue segment.",
+    "category": "constraint_following",
+    "difficulty": "hard",
+    "expected_sql": "SELECT segment, SUM(amount_usd) AS total FROM revenue GROUP BY segment ORDER BY total DESC",
+    "expected_answer": "Subscriptions is by far the largest revenue segment, contributing nearly half of all revenue. Digital ads is the second largest and growing rapidly. Print ads is the third largest but shrinking. Events and licensing are the smallest segments, each contributing a modest slice.",
+    "must_include": [],
+    "must_not_include": [
+      "$",
+      "million",
+      "%"
+    ],
+    "notes": "No numbers of any kind.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_107",
+    "question": "Give me a one-line answer: what is the total article count?",
+    "category": "constraint_following",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(*) FROM articles",
+    "expected_answer": "There are 200 articles in the database.",
+    "must_include": [
+      "200"
+    ],
+    "must_not_include": [],
+    "notes": "Must be a single line.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_108",
+    "question": "Summarize 2024 digital ads performance as a haiku.",
+    "category": "constraint_following",
+    "difficulty": "hard",
+    "expected_sql": "SELECT quarter, amount_usd FROM revenue WHERE segment = 'digital_ads' AND year = 2024 ORDER BY quarter",
+    "expected_answer": "Ads climb every quarter\nEight percent growth fuels the rise\nDigital leads now",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Haiku format: 5-7-5 syllables. Creative constraint.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_109",
+    "question": "List all beats alphabetically, one per line, no additional text.",
+    "category": "constraint_following",
+    "difficulty": "easy",
+    "expected_sql": "SELECT DISTINCT beat FROM authors ORDER BY beat",
+    "expected_answer": "ESG\nEnergy\nHealthcare\nMarkets\nPolitics\nReal Estate\nTechnology\nWealth",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "One per line, no commentary.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_110",
+    "question": "Explain the top 3 traffic sources using only metaphors \u2014 no data terms.",
+    "category": "constraint_following",
+    "difficulty": "hard",
+    "expected_sql": "SELECT source, SUM(page_views) AS total FROM traffic GROUP BY source ORDER BY total DESC LIMIT 3",
+    "expected_answer": "Think of our readers arriving three ways: the largest river flows from search engines, a steady well-worn highway brings those who know exactly where they're going, and a bustling town square channels the social media crowd our way.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Metaphorical language only.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_111",
+    "question": "Compare Q1 2023 vs Q1 2024 total revenue. Answer with exactly one number and one comparison word.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT year, SUM(amount_usd) AS total FROM revenue WHERE quarter = 'Q1' GROUP BY year ORDER BY year",
+    "expected_answer": "Q1 2024 was approximately 8% higher.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Minimal answer format.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_112",
+    "question": "Describe the print_ads decline using only questions, not statements.",
+    "category": "constraint_following",
+    "difficulty": "hard",
+    "expected_sql": "SELECT quarter, year, amount_usd FROM revenue WHERE segment = 'print_ads' ORDER BY year, quarter",
+    "expected_answer": "Did you know print ad revenue started at $2.2M per quarter in 2023? Can you guess how much it dropped by Q4 2024 \u2014 to under $1.6M? Isn't it striking that every single quarter showed a decline of about 5%? And doesn't this raise the question of when digital will fully replace print?",
+    "must_include": [
+      "print_ads",
+      "decline"
+    ],
+    "must_not_include": [],
+    "notes": "All questions, no declarative statements.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_113",
+    "question": "Summarize author distribution by beat \u2014 respond in JSON format only.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT beat, COUNT(*) AS cnt FROM authors GROUP BY beat ORDER BY beat",
+    "expected_answer": "{\"ESG\": 2, \"Energy\": 2, \"Healthcare\": 2, \"Markets\": 4, \"Politics\": 2, \"Real Estate\": 1, \"Technology\": 4, \"Wealth\": 3}",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Must be valid JSON, no prose.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_114",
+    "question": "In bullet points, list each revenue segment's 2024 trend direction (growing/declining/flat). No numbers.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT segment, SUM(CASE WHEN year = 2024 THEN amount_usd ELSE 0 END) - SUM(CASE WHEN year = 2023 THEN amount_usd ELSE 0 END) AS delta FROM revenue GROUP BY segment",
+    "expected_answer": "- Digital Ads: Growing\n- Print Ads: Declining\n- Subscriptions: Flat\n- Events: Growing\n- Licensing: Growing",
+    "must_include": [],
+    "must_not_include": [
+      "$",
+      "%",
+      "million"
+    ],
+    "notes": "Bullet points, direction only, no numbers.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_115",
+    "question": "Provide a 2-sentence executive summary of the entire media data landscape.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'articles' AS tbl, COUNT(*) AS cnt FROM articles UNION ALL SELECT 'authors', COUNT(*) FROM authors UNION ALL SELECT 'revenue', COUNT(*) FROM revenue UNION ALL SELECT 'traffic', COUNT(*) FROM traffic",
+    "expected_answer": "The content operation spans 200 articles across four sections by 20 authors, generating roughly $40M annually across five revenue streams. Traffic data shows strong weekday engagement patterns and a 15% annual growth trend driven primarily by organic search.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Exactly 2 sentences.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_116",
+    "question": "What is the total revenue in quarters where organic traffic exceeded 4 million page views?",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT r.quarter, r.year, SUM(r.amount_usd) AS total_revenue FROM revenue r WHERE EXISTS (SELECT 1 FROM traffic t WHERE t.source = 'organic' AND t.date BETWEEN CASE r.quarter WHEN 'Q1' THEN r.year || '-01-01' WHEN 'Q2' THEN r.year || '-04-01' WHEN 'Q3' THEN r.year || '-07-01' WHEN 'Q4' THEN r.year || '-10-01' END AND CASE r.quarter WHEN 'Q1' THEN r.year || '-03-31' WHEN 'Q2' THEN r.year || '-06-30' WHEN 'Q3' THEN r.year || '-09-30' WHEN 'Q4' THEN r.year || '-12-31' END GROUP BY 1 HAVING SUM(page_views) > 4000000) GROUP BY r.quarter, r.year",
+    "expected_answer": "Quarters with high organic traffic (likely Q3-Q4 2024 given the annual growth trend) correspond to total revenues of approximately $10-11M.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Complex EXISTS subquery correlating traffic to revenue quarters.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_117",
+    "question": "Show each author's name, how many articles they wrote, and the most common section they wrote for.",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT au.name, COUNT(ar.id) AS article_count, ar.section FROM authors au JOIN articles ar ON au.id = ar.author_id GROUP BY au.id, au.name, ar.section HAVING COUNT(ar.id) = (SELECT MAX(cnt) FROM (SELECT COUNT(*) AS cnt FROM articles WHERE author_id = au.id GROUP BY section))",
+    "expected_answer": "Each author primarily writes for sections aligned with their beat, e.g., Markets beat authors mostly publish in Markets.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Correlated subquery to find mode section per author.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_118",
+    "question": "Which authors have published articles in every section that exists in the database?",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT au.name FROM authors au WHERE (SELECT COUNT(DISTINCT section) FROM articles WHERE author_id = au.id) = (SELECT COUNT(DISTINCT section) FROM articles)",
+    "expected_answer": "Most likely no author has published in all 4 sections; authors tend to stay within 1-2 sections aligned with their beat.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Tests understanding of universal quantification.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_119",
+    "question": "Compare the total word count output between authors who joined before 2018 and those who joined after.",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT CASE WHEN join_date < '2018-01-01' THEN 'pre-2018' ELSE 'post-2018' END AS cohort, SUM(ar.word_count) AS total_words, COUNT(ar.id) AS articles FROM authors au JOIN articles ar ON au.id = ar.author_id GROUP BY cohort",
+    "expected_answer": "Pre-2018 authors have produced significantly more total word output, driven by their longer tenure and higher individual productivity.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_120",
+    "question": "For each revenue segment, show the quarter with the highest revenue.",
+    "category": "multi_hop",
+    "difficulty": "medium",
+    "expected_sql": "SELECT r.segment, r.quarter, r.year, r.amount_usd FROM revenue r WHERE r.amount_usd = (SELECT MAX(amount_usd) FROM revenue WHERE segment = r.segment) ORDER BY r.segment",
+    "expected_answer": "Each segment's peak quarter varies: digital_ads peaks in Q4 2024 (latest quarter, due to growth), while print_ads peaked in Q1 2023 (due to decline).",
+    "must_include": [
+      "digital_ads",
+      "print_ads"
+    ],
+    "must_not_include": [],
+    "notes": "",
+    "role": "finance"
+  },
+  {
+    "id": "eval_121",
+    "question": "Show the total article word count per month alongside monthly newsletter traffic.",
+    "category": "multi_hop",
+    "difficulty": "hard",
+    "expected_sql": "SELECT strftime('%Y-%m', ar.publish_date) AS month, SUM(ar.word_count) AS total_words, COALESCE((SELECT SUM(page_views) FROM traffic WHERE source = 'newsletter' AND strftime('%Y-%m', date) = strftime('%Y-%m', ar.publish_date)), 0) AS newsletter_views FROM articles ar WHERE ar.publish_date >= '2024-01-01' GROUP BY month ORDER BY month",
+    "expected_answer": "Monthly word count output and newsletter traffic both show variability across 2024, with no strong direct correlation between the two.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Correlated subquery joining on month; newsletter views from traffic.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_122",
+    "question": "Summarize the difference between the top and bottom revenue segments in 2024. Use exactly one statistic.",
+    "category": "constraint_following",
+    "difficulty": "medium",
+    "expected_sql": "SELECT segment, SUM(amount_usd) AS total FROM revenue WHERE year = 2024 GROUP BY segment ORDER BY total DESC",
+    "expected_answer": "Subscriptions outearned licensing by approximately 7x in 2024.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Exactly one statistic.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_123",
+    "question": "Name every author on the Technology beat and nothing else.",
+    "category": "constraint_following",
+    "difficulty": "easy",
+    "expected_sql": "SELECT name FROM authors WHERE beat = 'Technology' ORDER BY name",
+    "expected_answer": "Emma Rodriguez, Sarah Chen, Sophie Laurent, Thomas Hughes.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Names only, no commentary.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_124",
+    "question": "Describe the revenue trajectory of digital_ads as if it were a stock price \u2014 use financial language.",
+    "category": "constraint_following",
+    "difficulty": "hard",
+    "expected_sql": "SELECT quarter, year, amount_usd FROM revenue WHERE segment = 'digital_ads' ORDER BY year, quarter",
+    "expected_answer": "Digital ads opened at $1.8M in Q1 2023 and rallied steadily, posting consistent 8% quarterly gains. By Q4 2024 the segment closed near $3M, charting an uninterrupted bull run across eight consecutive quarters with no drawdowns.",
+    "must_include": [
+      "rally",
+      "bull"
+    ],
+    "must_not_include": [],
+    "notes": "Financial/stock metaphor language.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_125",
+    "question": "In a single word, characterize the print_ads revenue trend.",
+    "category": "constraint_following",
+    "difficulty": "easy",
+    "expected_sql": "SELECT SUM(CASE WHEN year = 2024 THEN amount_usd ELSE 0 END) - SUM(CASE WHEN year = 2023 THEN amount_usd ELSE 0 END) AS delta FROM revenue WHERE segment = 'print_ads'",
+    "expected_answer": "Declining.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Single word answer.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_126",
+    "question": "How did the company's market share compare to Reuters in Q4 2024?",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No competitor market share data available in the database' AS note",
+    "expected_answer": "The database does not contain competitor market share data. I can only report on the company's own revenue, content, and traffic metrics.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Missing data: no competitor info exists.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_127",
+    "question": "Summarize article performance for January 2022.",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM articles WHERE publish_date >= '2022-01-01' AND publish_date < '2022-02-01'",
+    "expected_answer": "No articles exist for January 2022 in this database. The earliest data begins in January 2023.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Out-of-range: data starts 2023.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_128",
+    "question": "What is the average word count per article broken down by author seniority level?",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No seniority_level column exists in the authors table' AS note",
+    "expected_answer": "The database does not include an author seniority level field. I can break down word count by beat or by individual author if that would be helpful.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Schema mismatch: no seniority column.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_129",
+    "question": "Show me the click-through rate for each traffic source.",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No click-through rate data available \u2014 traffic table has page_views and unique_visitors only' AS note",
+    "expected_answer": "Click-through rate is not available in this database. The traffic table tracks page views and unique visitors by source and section, but does not include click or impression data.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Schema mismatch: no CTR field.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_130",
+    "question": "What was the advertising CPM trend over 2024?",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No CPM or impression data available in the database' AS note",
+    "expected_answer": "CPM (cost per thousand impressions) data is not available. Revenue is tracked at the segment level (digital_ads, print_ads, etc.) without impression or CPM breakdowns.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Missing data: no CPM metrics.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_131",
+    "question": "Compare the company's article quality scores across sections.",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No quality_score column exists in the articles table' AS note",
+    "expected_answer": "The database does not contain article quality scores. Available article metrics include word count, section, publish date, and author.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Schema mismatch: no quality score.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_132",
+    "question": "What was the year-over-year traffic growth from 2023 to 2024?",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'Traffic data only available for 2024' AS note",
+    "expected_answer": "Year-over-year traffic comparison is not possible because the traffic table only contains 2024 data. Within 2024, there was approximately 15% growth from January to December.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Missing data: traffic is 2024-only.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_133",
+    "question": "Show the revenue broken down by geographic region.",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No geographic region data in the revenue table' AS note",
+    "expected_answer": "Revenue data is not available by geographic region. Revenue is broken down by segment (digital_ads, print_ads, subscriptions, events, licensing) and by quarter/year.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Schema mismatch: no geography field.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_134",
+    "question": "What is the churn rate for subscriptions?",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No churn rate or subscriber count data available' AS note",
+    "expected_answer": "Subscription churn rate is not tracked in this database. The revenue table only records total subscription revenue per quarter, without subscriber counts or cancellations.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Missing data: no churn metrics.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_135",
+    "question": "How many video articles were published?",
+    "category": "edge_case",
+    "difficulty": "easy",
+    "expected_sql": "SELECT 'No article type/format column exists \u2014 all articles are text' AS note",
+    "expected_answer": "The articles table does not distinguish between text and video content. All 200 records appear to be text articles based on the schema (which includes word_count).",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Schema mismatch: no content type field.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_136",
+    "question": "What was the total cost of content production in 2024?",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No cost or expense data available' AS note",
+    "expected_answer": "Content production costs are not tracked in this database. The data covers revenue, articles, authors, and traffic \u2014 but no expense or cost information.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Missing data: no cost/expense tables.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_137",
+    "question": "Show me the sentiment analysis of articles by section.",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No sentiment data available in the articles table' AS note",
+    "expected_answer": "Sentiment analysis data is not available. The articles table contains metadata like title, section, publish date, and word count, but no sentiment scores or NLP-derived fields.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Schema mismatch: no sentiment column.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_138",
+    "question": "What is the correlation coefficient between traffic and revenue?",
+    "category": "edge_case",
+    "difficulty": "hard",
+    "expected_sql": "SELECT 'SQLite does not support statistical correlation functions natively' AS note",
+    "expected_answer": "SQLite does not have a built-in correlation function. I can show the raw quarterly traffic and revenue data side-by-side so you can assess the relationship directionally.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Technical limitation: SQLite lacks CORR().",
+    "role": "finance"
+  },
+  {
+    "id": "eval_139",
+    "question": "Show me the email open rates for the newsletter source.",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No email open rate data \u2014 traffic table only has page_views and unique_visitors' AS note",
+    "expected_answer": "Email open rates are not available. The traffic table tracks page views and unique visitors attributed to the newsletter source, but does not include email-level metrics like open rate or click rate.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Schema mismatch: no email metrics.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_140",
+    "question": "Which articles went viral on social media?",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No per-article social engagement data available' AS note",
+    "expected_answer": "The database does not track social media engagement at the individual article level. Traffic from social media is recorded as aggregate daily page views by section, not per article.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Missing data: no per-article social metrics.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_141",
+    "question": "What was revenue in Q1 2025?",
+    "category": "edge_case",
+    "difficulty": "easy",
+    "expected_sql": "SELECT COUNT(*) AS cnt FROM revenue WHERE quarter = 'Q1' AND year = 2025",
+    "expected_answer": "No revenue data exists for Q1 2025. The dataset covers Q1 2023 through Q4 2024.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Out-of-range: data ends Q4 2024.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_142",
+    "question": "What is the profit margin by segment?",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No cost or margin data available \u2014 only revenue amounts' AS note",
+    "expected_answer": "Profit margin data is not available. The revenue table contains gross revenue by segment and quarter, but no cost or margin information.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Missing data: revenue only, no costs.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_143",
+    "question": "Show the bounce rate trends for each section.",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No bounce rate data in the traffic table' AS note",
+    "expected_answer": "Bounce rate is not tracked in this database. The traffic table includes page views and unique visitors by source and section, but no engagement metrics like bounce rate or time-on-page.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Schema mismatch: no bounce rate.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_144",
+    "question": "What's the trending topic across all articles?",
+    "category": "edge_case",
+    "difficulty": "hard",
+    "expected_sql": "SELECT section, COUNT(*) AS cnt FROM articles GROUP BY section ORDER BY cnt DESC",
+    "expected_answer": "The database doesn't contain topic tags or NLP-derived topics. The closest approximation is section distribution: Markets has the most articles, followed by Technology. Individual article titles suggest themes around AI, Fed policy, and market volatility.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Partial data: no topic tags, but section and titles give hints.",
+    "role": "finance"
+  },
+  {
+    "id": "eval_145",
+    "question": "How many articles were written by freelancers vs staff?",
+    "category": "edge_case",
+    "difficulty": "medium",
+    "expected_sql": "SELECT 'No employment_type column exists in the authors table' AS note",
+    "expected_answer": "The database does not distinguish between freelance and staff authors. All 20 authors are listed with name, beat, article count, and join date \u2014 no employment type field exists.",
+    "must_include": [],
+    "must_not_include": [],
+    "notes": "Schema mismatch: no freelance/staff distinction.",
+    "role": "finance"
+  }
+]

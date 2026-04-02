@@ -1,0 +1,26 @@
+# Media Agent Demo — dependencies
+# Pinned to latest stable as of 2026-03-12
+
+# Google ADK (agent infrastructure, session management)
+google-adk==1.27.0
+
+# Google Gen AI SDK (LLM calls via Vertex AI)
+google-genai>=1.57.0
+# Vertex AI (for vertexai.init so google-genai can use Vertex backend)
+google-cloud-aiplatform>=1.38.0
+
+# OpenInference instrumentation (auto: ADK agent/tool spans, Gen AI LLM spans)
+openinference-instrumentation==0.1.46
+openinference-instrumentation-google-adk>=0.1.0
+openinference-instrumentation-google-genai>=0.1.0
+openinference-semantic-conventions>=0.1.9
+
+# Arize OTel exporter
+arize-otel==0.11.0
+
+# OpenTelemetry core (pulled in by arize-otel, pinned for stability)
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+
+# Environment variables
+python-dotenv>=1.0.0
