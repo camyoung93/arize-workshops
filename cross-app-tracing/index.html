@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cross-App Tracing Demo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; display: flex; justify-content: center; padding: 2rem; }
+  .container { width: 100%; max-width: 640px; }
+  h1 { font-size: 1.4rem; margin-bottom: .25rem; }
+  .sub { color: #666; font-size: .85rem; margin-bottom: 1rem; }
+  #messages { background: #fff; border: 1px solid #ddd; border-radius: 8px; min-height: 300px; max-height: 60vh; overflow-y: auto; padding: 1rem; margin-bottom: .75rem; }
+  .msg { margin-bottom: .75rem; line-height: 1.5; }
+  .msg.user { text-align: right; }
+  .msg .bubble { display: inline-block; padding: .5rem .75rem; border-radius: 12px; max-width: 85%; text-align: left; white-space: pre-wrap; }
+  .msg.user .bubble { background: #2563eb; color: #fff; }
+  .msg.assistant .bubble { background: #e5e7eb; }
+  .msg.system .bubble { background: #fef3c7; font-size: .8rem; text-align: center; display: block; }
+  form { display: flex; gap: .5rem; }
+  input { flex: 1; padding: .6rem .75rem; border: 1px solid #ccc; border-radius: 8px; font-size: .95rem; }
+  button { padding: .6rem 1.2rem; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: .95rem; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Cross-App Tracing Demo</h1>
+  <p class="sub">Each message creates a trace that flows from this browser into the backend LLM call.</p>
+  <div id="messages"></div>
+  <form id="chat-form">
+    <input id="input" placeholder="Type a message…" autocomplete="off" />
+    <button type="submit">Send</button>
+  </form>
+</div>
+
+<script>
+// ── INSTRUMENTATION TYPE 2: FRONTEND ──────────────────────────────────
+// Generates W3C traceparent header (trace ID + span ID) and injects it
+// on every fetch. After the response, reports the span to /telemetry so
+// it appears in Arize as the trace root.
+//
+// No OTel SDK needed — just random hex IDs + the traceparent format.
+
+function randomHex(bytes) {
+  const arr = new Uint8Array(bytes);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function tracedFetch(url, init = {}) {
+  const traceId = randomHex(16);
+  const spanId  = randomHex(8);
+  const traceparent = `00-${traceId}-${spanId}-01`;
+
+  const headers = new Headers(init.headers);
+  headers.set('traceparent', traceparent);
+
+  const startMs = Date.now();
+  const response = await fetch(url, { ...init, headers });
+  const endMs = Date.now();
+
+  // Fire-and-forget: report this span to the backend for Arize export
+  fetch('/telemetry', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      trace_id: traceId,
+      span_id: spanId,
+      name: 'Frontend: POST /chat',
+      start_time_ms: startMs,
+      end_time_ms: endMs,
+      http_status_code: response.status,
+    }),
+  }).catch(() => {});
+
+  return response;
+}
+
+// ── Chat UI ───────────────────────────────────────────────────────────
+
+const messages = document.getElementById('messages');
+const form     = document.getElementById('chat-form');
+const input    = document.getElementById('input');
+
+function addMessage(role, text) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `<span class="bubble">${text}</span>`;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  addMessage('user', text);
+  form.querySelector('button').disabled = true;
+
+  try {
+    const res = await tracedFetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text }),
+    });
+    const data = await res.json();
+    addMessage('assistant', data.response);
+  } catch (err) {
+    addMessage('system', 'Error: ' + err.message);
+  } finally {
+    form.querySelector('button').disabled = false;
+    input.focus();
+  }
+});
+</script>
+</body>
+</html>
