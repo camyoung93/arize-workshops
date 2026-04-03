@@ -22,7 +22,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from openai import OpenAI
-from opentelemetry import trace as trace_api
+from opentelemetry.propagate import extract as extract_context
+from opentelemetry import context as otel_context, trace as trace_api
 from opentelemetry.trace import SpanContext, TraceFlags, SpanKind, Status, StatusCode
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.util.instrumentation import InstrumentationScope
@@ -92,10 +93,7 @@ def create_browser_span(trace_id_hex, span_id_hex, name, start_ms, end_ms, statu
 # FastAPI app
 # ---------------------------------------------------------------------------
 
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-
 app = FastAPI()
-FastAPIInstrumentor.instrument_app(app, excluded_urls="health,telemetry")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 client = OpenAI()
@@ -119,7 +117,9 @@ async def serve_ui():
 
 
 @app.post("/chat")
-async def chat(req: ChatRequest):
+async def chat(req: ChatRequest, raw: Request):
+    ctx = extract_context(carrier=dict(raw.headers))
+    token = otel_context.attach(ctx)
     try:
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -132,6 +132,7 @@ async def chat(req: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
+        otel_context.detach(token)
         trace_api.get_tracer_provider().force_flush()
 
 
