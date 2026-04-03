@@ -1,11 +1,11 @@
 """
 Cross-App Tracing Demo — minimal example.
 
-INSTRUMENTATION TYPE 1 (Backend):
+Backend (app.py):
+  - FastAPIInstrumentor auto-creates HTTP spans + extracts traceparent
   - OpenAIInstrumentor captures LLM call spans
-  - Manual traceparent extraction links them to the browser's trace
 
-INSTRUMENTATION TYPE 2 (Frontend):
+Frontend (index.html):
   - Vanilla JS generates trace/span IDs and injects traceparent header
   - POSTs span data to /telemetry so the browser span appears in Arize
 
@@ -22,8 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from openai import OpenAI
-from opentelemetry.propagate import extract as extract_context
-from opentelemetry import context as otel_context, trace as trace_api
+from opentelemetry import trace as trace_api
 from opentelemetry.trace import SpanContext, TraceFlags, SpanKind, Status, StatusCode
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.util.instrumentation import InstrumentationScope
@@ -32,7 +31,7 @@ from opentelemetry.sdk.util.instrumentation import InstrumentationScope
 # ---------------------------------------------------------------------------
 # Tracing setup — runs at module level (outside async context) so the gRPC
 # channel is created in the main thread. batch=False means each span exports
-# individually, so no init-time span can poison a batch.
+# individually.
 # ---------------------------------------------------------------------------
 
 def _init_tracing():
@@ -93,7 +92,10 @@ def create_browser_span(trace_id_hex, span_id_hex, name, start_ms, end_ms, statu
 # FastAPI app
 # ---------------------------------------------------------------------------
 
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
 app = FastAPI()
+FastAPIInstrumentor.instrument_app(app, excluded_urls="health,telemetry")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 client = OpenAI()
@@ -117,10 +119,7 @@ async def serve_ui():
 
 
 @app.post("/chat")
-async def chat(req: ChatRequest, raw: Request):
-    # Extract traceparent so OpenAI span joins the browser's trace
-    ctx = extract_context(carrier=dict(raw.headers))
-    token = otel_context.attach(ctx)
+async def chat(req: ChatRequest):
     try:
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -133,7 +132,6 @@ async def chat(req: ChatRequest, raw: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        otel_context.detach(token)
         trace_api.get_tracer_provider().force_flush()
 
 
