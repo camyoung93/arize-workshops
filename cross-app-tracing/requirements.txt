@@ -1,0 +1,19 @@
+fastapi>=0.109.0
+uvicorn>=0.27.0
+openai>=1.40.0
+python-dotenv>=1.0.0
+pydantic>=2.6.0
+
+# Arize tracing
+arize-otel>=0.7.0
+
+# OpenInference instrumentation
+openinference-instrumentation-openai>=0.1.0
+
+# OTel SDK + exporter (arize-otel brings these in, pinned for clarity)
+opentelemetry-sdk>=1.20.0
+opentelemetry-exporter-otlp>=1.20.0
+
+# NOTE: opentelemetry-instrumentation-fastapi is intentionally excluded.
+# Its ASGI middleware spans are rejected by Arize's ingestion pipeline,
+# causing the entire export batch to fail. We use manual propagation instead.

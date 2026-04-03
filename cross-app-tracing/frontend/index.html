@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude App Crossing — Cross-App Tracing Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #a78bfa;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 0.4rem;
+    }
+
+    textarea {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    textarea:focus { border-color: #7c3aed; }
+
+    button#ask-btn {
+      margin-top: 1rem;
+      width: 100%;
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    button#ask-btn:hover:not(:disabled) { background: #6d28d9; }
+    button#ask-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .response-box {
+      margin-top: 1.25rem;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      min-height: 60px;
+      color: #e2e8f0;
+      display: none;
+    }
+
+    .trace-info {
+      margin-top: 1rem;
+      font-size: 0.72rem;
+      color: #475569;
+      font-family: "SF Mono", "Fira Code", monospace;
+      word-break: break-all;
+      display: none;
+    }
+
+    .trace-info span { color: #7c3aed; }
+
+    .error { color: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Claude App Crossing</h1>
+    <p class="subtitle">Cross-app tracing demo — browser click &rarr; FastAPI &rarr; OpenAI &rarr; Arize</p>
+
+    <label for="question">Your question</label>
+    <textarea id="question" placeholder="e.g. What is cross-app distributed tracing?"></textarea>
+
+    <button id="ask-btn">Ask AI</button>
+
+    <div class="response-box" id="response-box"></div>
+    <div class="trace-info" id="trace-info"></div>
+  </div>
+
+  <script>
+    const BACKEND = "http://localhost:8000";
+
+    // -----------------------------------------------------------------------
+    // W3C traceparent helpers
+    // -----------------------------------------------------------------------
+
+    function randomHex(bytes) {
+      const arr = new Uint8Array(bytes);
+      crypto.getRandomValues(arr);
+      return Array.from(arr).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function makeTraceparent() {
+      const traceId = randomHex(16);  // 32 hex chars
+      const spanId  = randomHex(8);   // 16 hex chars
+      return {
+        traceId,
+        spanId,
+        header: `00-${traceId}-${spanId}-01`,
+      };
+    }
+
+    // -----------------------------------------------------------------------
+    // Main handler
+    // -----------------------------------------------------------------------
+
+    document.getElementById("ask-btn").addEventListener("click", async () => {
+      const btn       = document.getElementById("ask-btn");
+      const question  = document.getElementById("question").value.trim();
+      const responseBox = document.getElementById("response-box");
+      const traceInfo   = document.getElementById("trace-info");
+
+      if (!question) {
+        responseBox.style.display = "block";
+        responseBox.className = "response-box error";
+        responseBox.textContent = "Please enter a question first.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Thinking…";
+      responseBox.style.display = "none";
+      traceInfo.style.display = "none";
+
+      // Generate a fresh W3C traceparent for this click event
+      const { traceId, spanId, header: traceparent } = makeTraceparent();
+      const clickTimestamp = Date.now();
+      const startTimeMs    = performance.now() + performance.timeOrigin;
+
+      let httpStatus = 200;
+
+      try {
+        // POST to backend — traceparent in header propagates the trace context;
+        // event metadata in the body gets attached as span attributes.
+        const res = await fetch(`${BACKEND}/ask`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "traceparent": traceparent,
+          },
+          body: JSON.stringify({
+            message:    question,
+            event_type: "click",
+            element_id: "ask-btn",
+            timestamp:  clickTimestamp,
+          }),
+        });
+
+        httpStatus = res.status;
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || `HTTP ${res.status}`);
+        }
+
+        responseBox.className = "response-box";
+        responseBox.textContent = data.response;
+
+      } catch (err) {
+        httpStatus = httpStatus !== 200 ? httpStatus : 500;
+        responseBox.className = "response-box error";
+        responseBox.textContent = `Error: ${err.message}`;
+      } finally {
+        responseBox.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Ask AI";
+
+        // Record end time after the full round-trip
+        const endTimeMs = performance.now() + performance.timeOrigin;
+
+        // Send the browser's root span to the backend so it appears as the
+        // trace root in Arize (browser can't export directly to Arize).
+        fetch(`${BACKEND}/telemetry`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            trace_id:        traceId,
+            span_id:         spanId,
+            name:            "browser.click → ask-btn",
+            start_time_ms:   startTimeMs,
+            end_time_ms:     endTimeMs,
+            http_status_code: httpStatus,
+          }),
+        }).catch(() => {/* telemetry best-effort */});
+
+        // Show trace info in the UI
+        traceInfo.style.display = "block";
+        traceInfo.innerHTML =
+          `traceparent: <span>${traceparent}</span>`;
+      }
+    });
+  </script>
+</body>
+</html>
