@@ -2,7 +2,7 @@
 Cross-App Tracing Demo — minimal example.
 
 Backend (app.py):
-  - FastAPIInstrumentor auto-creates HTTP spans + extracts traceparent
+  - Manual traceparent extraction in /chat
   - OpenAIInstrumentor captures LLM call spans
 
 Frontend (index.html):
@@ -148,4 +148,4 @@ async def telemetry(data: TelemetryData):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
