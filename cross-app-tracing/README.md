@@ -28,13 +28,17 @@ Click "Ask AI"
 ```bash
 cd cross-app-tracing
 
-# 1. Copy and fill in credentials
+# 1. Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate
+
+# 2. Copy and fill in credentials
 cp .env.example .env
 
-# 2. Install dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 3. Start the backend
+# 4. Start the backend
 cd backend
 uvicorn app:app --reload --port 8000
 ```

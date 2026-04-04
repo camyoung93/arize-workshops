@@ -73,6 +73,8 @@ class FrontendSpan(BaseModel):
     start_time_ms: float
     end_time_ms: float
     http_status_code: int = 200
+    input_value: str = ""
+    output_value: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -136,6 +138,8 @@ async def receive_telemetry(span_data: FrontendSpan):
         start_time_ms=span_data.start_time_ms,
         end_time_ms=span_data.end_time_ms,
         http_status_code=span_data.http_status_code,
+        input_value=span_data.input_value,
+        output_value=span_data.output_value,
     )
     return {"ok": ok}
 

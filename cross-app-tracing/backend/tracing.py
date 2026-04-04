@@ -86,6 +86,8 @@ def create_browser_span(
     start_time_ms: float,
     end_time_ms: float,
     http_status_code: int = 200,
+    input_value: str = "",
+    output_value: str = "",
 ) -> bool:
     """
     Recreate a browser span with its original trace_id/span_id so it appears
@@ -121,6 +123,8 @@ def create_browser_span(
             "service.origin": "browser",
             "http.status_code": http_status_code,
             "openinference.span.kind": "CHAIN",
+            "input.value": input_value,
+            "output.value": output_value,
         },
         start_time=int(start_time_ms * 1_000_000),
         end_time=int(end_time_ms * 1_000_000),

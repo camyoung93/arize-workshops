@@ -172,6 +172,7 @@
       const startTimeMs    = performance.now() + performance.timeOrigin;
 
       let httpStatus = 200;
+      let responseText = "";
 
       try {
         // POST to backend — traceparent in header propagates the trace context;
@@ -197,8 +198,9 @@
           throw new Error(data.detail || `HTTP ${res.status}`);
         }
 
+        responseText = data.response;
         responseBox.className = "response-box";
-        responseBox.textContent = data.response;
+        responseBox.textContent = responseText;
 
       } catch (err) {
         httpStatus = httpStatus !== 200 ? httpStatus : 500;
@@ -224,6 +226,8 @@
             start_time_ms:   startTimeMs,
             end_time_ms:     endTimeMs,
             http_status_code: httpStatus,
+            input_value:      question,
+            output_value:     responseText,
           }),
         }).catch(() => {/* telemetry best-effort */});
 
