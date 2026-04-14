@@ -10,7 +10,7 @@ import {
 } from "@arizeai/ax-client";
 
 const SPACE = process.env.ARIZE_SPACE_ID!;
-const MODEL = "gpt-4o-mini";
+const DEFAULT_MODEL = "gpt-4o-mini";
 
 const openai = new OpenAI();
 
@@ -35,10 +35,13 @@ function isConflict(err: unknown): boolean {
 
 async function callOpenAI(
   messages: { role: string; content: string }[],
+  model: string,
+  invocationParams?: Record<string, unknown>,
 ): Promise<string> {
   const res = await openai.chat.completions.create({
-    model: MODEL,
+    model,
     messages: messages as OpenAI.ChatCompletionMessageParam[],
+    ...invocationParams,
   });
   return res.choices[0].message.content ?? "";
 }
@@ -58,7 +61,7 @@ async function main() {
         commitMessage: "Initial version",
         inputVariableFormat: "f_string",
         provider: "openAI",
-        model: MODEL,
+        model: DEFAULT_MODEL,
         messages: [
           {
             role: "system",
@@ -90,7 +93,7 @@ async function main() {
         commitMessage: "Initial version",
         inputVariableFormat: "f_string",
         provider: "openAI",
-        model: MODEL,
+        model: DEFAULT_MODEL,
         messages: [
           {
             role: "system",
@@ -131,14 +134,15 @@ async function main() {
   // Retrieve example IDs so we can map runs back to them
   const examples = await listDatasetExamples({ dataset: datasetId });
 
-  // Step 4 — Pull both prompts back from Prompt Hub
+  // Step 4 — Pull both prompts back from Prompt Hub (model + params come from here)
   console.log("Step 4: Pulling prompts from Prompt Hub…");
   const drafterPrompt = await getPrompt({ prompt: drafterId });
   const refinerPrompt = await getPrompt({ prompt: refinerId });
-  console.log("  → Prompts retrieved");
 
-  const drafterMessages = drafterPrompt.version.messages;
-  const refinerMessages = refinerPrompt.version.messages;
+  const drafterVersion = drafterPrompt.version;
+  const refinerVersion = refinerPrompt.version;
+  console.log(`  → Drafter: model=${drafterVersion.model}, params=${JSON.stringify(drafterVersion.invocationParams ?? {})}`);
+  console.log(`  → Refiner: model=${refinerVersion.model}, params=${JSON.stringify(refinerVersion.invocationParams ?? {})}`);
 
   // Step 5 — Run the chain for each example
   console.log("Step 5: Running prompt chain…");
@@ -148,19 +152,27 @@ async function main() {
     const topic = example.topic as string;
     console.log(`  • "${topic}"`);
 
-    // Prompt 1 → Draft
-    const drafterFilled = drafterMessages.map((m) => ({
+    // Prompt 1 → Draft (model + params from Prompt Hub)
+    const drafterFilled = drafterVersion.messages.map((m) => ({
       role: m.role,
       content: fillTemplate(m.content ?? "", { topic }),
     }));
-    const draft = await callOpenAI(drafterFilled);
+    const draft = await callOpenAI(
+      drafterFilled,
+      drafterVersion.model ?? DEFAULT_MODEL,
+      drafterVersion.invocationParams as Record<string, unknown>,
+    );
 
-    // Prompt 2 → Refined output
-    const refinerFilled = refinerMessages.map((m) => ({
+    // Prompt 2 → Refined output (model + params from Prompt Hub)
+    const refinerFilled = refinerVersion.messages.map((m) => ({
       role: m.role,
       content: fillTemplate(m.content ?? "", { draft }),
     }));
-    const refined = await callOpenAI(refinerFilled);
+    const refined = await callOpenAI(
+      refinerFilled,
+      refinerVersion.model ?? DEFAULT_MODEL,
+      refinerVersion.invocationParams as Record<string, unknown>,
+    );
 
     runs.push({ exampleId: example.id, output: refined, draft });
   }
