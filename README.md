@@ -6,3 +6,4 @@
 | Media Agent — Multi-Agent NL-to-SQL Pipeline | [View README](media-agent/README.md) |
 | Cross-App Tracing — Frontend + Backend OTel Demo | [View README](cross-app-tracing/README.md) |
 | Prompt Chaining Experiment — Prompt Lifecycle Quickstart (TypeScript) | [View README](prompt-chaining-experiment/README.md) |
+| Synthetic Spans — Industry-themed synthetic OpenInference trace generators | [View README](synthetic-data/README.md) |

@@ -1,0 +1,8 @@
+# arize v7 for eval logging (arize.pandas.logger); arize-otel handles tracing independently
+arize>=7,<8
+arize-otel
+opentelemetry-api
+opentelemetry-sdk
+openinference-semantic-conventions
+python-dotenv
+pandas

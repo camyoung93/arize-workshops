@@ -1,0 +1,5 @@
+# Arize SDK v7 — works with Python 3.8+
+arize>=7.0,<8
+packaging
+pandas
+numpy

@@ -1,0 +1,127 @@
+# Synthetic Spans Generator Configuration Template
+# Copy this file and customize for your use case
+
+# ============================================================================
+# BASIC SETTINGS
+# ============================================================================
+company_name: "Your Company Name"  # Used in prompts and responses
+project_name: "your_project_name"  # Arize project name (lowercase, no spaces)
+chain_name: "Your Company Call Center"  # Name shown in trace hierarchy
+
+# ============================================================================
+# ARIZE CREDENTIALS
+# ============================================================================
+# These can be overridden via CLI arguments or environment variables
+# Environment variables: ARIZE_SPACE_ID, ARIZE_API_KEY
+space_id: ""  # Your Arize space ID
+api_key: ""   # Your Arize API key
+
+# ============================================================================
+# GENERATION SETTINGS
+# ============================================================================
+generation:
+  num_spans: 1000  # Number of traces to generate
+  batch_size: 10   # Process traces in batches of this size
+  session_size_min: 2  # Minimum traces per session
+  session_size_max: 5  # Maximum traces per session
+
+# ============================================================================
+# SCENARIOS
+# ============================================================================
+# Define different scenarios with queries, responses, and document content
+# Each scenario should have:
+#   - queries: List of customer queries/inputs
+#   - responses: List of agent responses (must match queries length)
+#   - document_content: Knowledge base content for retrieval
+scenarios:
+  scenario_name_1:
+    queries:
+      - "Example query 1"
+      - "Example query 2"
+    responses:
+      - "Example response 1"
+      - "Example response 2"
+    document_content: |
+      Knowledge base content for this scenario.
+      Can be multi-line text.
+
+  scenario_name_2:
+    queries:
+      - "Another query"
+    responses:
+      - "Another response"
+    document_content: "More knowledge base content"
+
+# ============================================================================
+# PROMPT TEMPLATES
+# ============================================================================
+# Define prompt templates for each scenario
+# Each template should have:
+#   - template: String with {user_query} placeholder
+#   - system_message: System prompt for the LLM
+#   - version: Template version identifier
+prompt_templates:
+  scenario_name_1:
+    template: "Customer interaction: {user_query}"
+    system_message: "You are a helpful agent for {company_name}. Be professional and friendly."
+    version: "v1.0"
+  
+  scenario_name_2:
+    template: "Customer request: {user_query}"
+    system_message: "You are a specialist agent for {company_name}."
+    version: "v1.0"
+
+# ============================================================================
+# TOOLS CONFIGURATION
+# ============================================================================
+# Define tools that can be called by LLMs
+# Each tool should have:
+#   - name: Tool identifier
+#   - description: What the tool does
+#   - parameters: JSON Schema for tool parameters
+tools:
+  tool_name_1:
+    name: "tool_name_1"
+    description: "Description of what this tool does"
+    parameters:
+      type: "object"
+      properties:
+        param1:
+          type: "string"
+          description: "Parameter description"
+      required: ["param1"]
+
+# Scenario-to-tools mapping (used by get_random_tools function)
+# Maps scenario names to lists of tool names that are relevant
+scenario_tools:
+  scenario_name_1:
+    - "tool_name_1"
+  scenario_name_2:
+    - "tool_name_1"
+    - "tool_name_2"
+
+# ============================================================================
+# POISONED DATA CONFIGURATION
+# ============================================================================
+# Configuration for injecting anomalous/high token counts
+# Used to simulate problematic agent behavior
+poisoned_data:
+  enabled: true  # Set to false to disable poisoned data
+  poisoned_agents:
+    agent_name_1:
+      token_multiplier: 10.0  # Multiply normal tokens by this factor
+      min_tokens: 50000       # Or use fixed minimum (alternative to multiplier)
+      probability: 0.1        # Probability of being poisoned (0.0 to 1.0)
+  default_high_tokens:
+    prompt: 50000
+    completion: 20000
+    total: 70000
+
+# ============================================================================
+# AGENT MAPPING
+# ============================================================================
+# Maps scenario names to agent names
+# Used to determine which agent handles which scenario
+agent_mapping:
+  scenario_name_1: "customer_service_agent"
+  scenario_name_2: "specialist_agent"
