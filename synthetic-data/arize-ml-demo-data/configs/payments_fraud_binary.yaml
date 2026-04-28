@@ -1,0 +1,34 @@
+flavor: payments_fraud
+model_type: binary_classification
+model_id: demo-payments-fraud-v1
+model_version: "1.0"
+
+base_rows: 100000
+base_window_days: 90
+
+spike_rows: 25000
+spike_window_days: 14
+
+spikes:
+  - feature_drift
+  - missing_values
+  - schema_regression
+
+target_metric: 0.80
+
+embeddings: tabular
+embedding_model: distilbert-base-uncased
+embedding_batch_size: 100
+
+shap: synthetic
+important_features:
+  amount_band: 5.0
+  transaction_amount: 4.0
+  entry_method: 3.0
+
+environments:
+  - production
+
+seed: 42
+output_dir: .scratch/arize-ml-demo-data
+log_to_arize: true

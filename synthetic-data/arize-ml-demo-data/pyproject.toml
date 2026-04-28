@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arize-ml-demo-data"
+version = "0.1.0"
+description = "Generate synthetic ML datasets with realistic drift, DQ, and performance regressions for Arize POCs and demos."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Arize ML Demo Data Contributors" },
+]
+keywords = ["arize", "ml", "synthetic-data", "demo", "drift", "observability"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "arize>=8.0,<9",
+    "pandas>=2.0,<3",
+    "numpy>=2.0",
+    "pyarrow>=14.0",
+    "protobuf>=4.21,<7",
+    "pyyaml>=6.0",
+    "faker>=24.0",
+    "tqdm>=4",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+embeddings = ["arize[embeddings]>=8.0,<9"]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+arize-ml-demo-data = "arize_demo_data.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["arize_demo_data*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]

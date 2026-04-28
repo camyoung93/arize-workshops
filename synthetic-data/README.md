@@ -6,14 +6,15 @@ Notebooks and scripts for generating synthetic OpenInference traces and sending 
 
 ```
 synthetic-data/
-├── financial-data/    # Financial data / research agent traces (NL-to-SQL, briefing, research augment)
-├── telecom/           # Telecom call center agent traces
-├── banking/           # Retail banking agent traces (stock, transactions, risk)
-├── streaming/         # Video streaming search augment traces + feature store monitoring
-├── generic/           # Industry-agnostic demos (AE triage, NL-to-filter)
+├── financial-data/      # Financial data / research agent traces (NL-to-SQL, briefing, research augment)
+├── telecom/             # Telecom call center agent traces
+├── banking/             # Retail banking agent traces (stock, transactions, risk)
+├── streaming/           # Video streaming search augment traces + feature store monitoring
+├── generic/             # Industry-agnostic demos (AE triage, NL-to-filter)
+├── arize-ml-demo-data/  # Classical ML synthetic data generator (CLI + flavors + spikes)
 ├── config/
-│   └── template.yaml  # Configuration template for the span generator
-├── .env.example       # Required env vars
+│   └── template.yaml    # Configuration template for the span generator
+├── .env.example         # Required env vars
 ├── requirements.txt
 └── requirements-v7.txt
 ```
@@ -32,6 +33,7 @@ synthetic-data/
 | generic | `synthetic_spans_ae_triage.ipynb` | AE triage agent (Scenario A read-only, Scenario B blocked tool) |
 | generic | `synthetic_spans_ae_triage_scenario_c.ipynb` | AE triage v2 with dataset experiments and OTLP traces |
 | generic | `synthetic_spans_nl_to_filter.ipynb` | NL-to-filter / NLP-to-SQL synthetic traces |
+| arize-ml-demo-data | `python -m arize_demo_data` | Classical ML POC data: baseline + injected drift / DQ / performance spikes, logged via Arize SDK as a tabular model. See its [README](arize-ml-demo-data/README.md). |
 
 ## Setup
 
