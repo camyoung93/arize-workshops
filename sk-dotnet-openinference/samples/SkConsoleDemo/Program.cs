@@ -65,8 +65,10 @@ using var tracerProvider = tracerBuilder.Build();
 
 if (syntheticMode)
 {
-    Console.WriteLine("[demo] SYNTHETIC=true: emitting a hand-crafted SK-shaped activity (no LLM call)");
+    Console.WriteLine("[demo] SYNTHETIC=true: emitting hand-crafted SK-shaped activities (no LLM call)");
     EmitSyntheticActivity();
+    EmitSyntheticToolCallActivity();
+    EmitSyntheticKernelFunctionActivity();
 }
 else
 {
@@ -142,5 +144,77 @@ static void EmitSyntheticActivity()
             ["gen_ai.event.content"] = "{\"index\": 0, \"message\": {\"role\": \"assistant\", \"content\": \"The capital of France is Paris.\"}, \"tool_calls\": [], \"finish_reason\": \"stop\"}",
         }));
 
-    Console.WriteLine($"[demo] Synthetic activity id={activity.TraceId}");
+    Console.WriteLine($"[demo] Synthetic chat activity id={activity.TraceId}");
+}
+
+static void EmitSyntheticToolCallActivity()
+{
+    using var source = new ActivitySource("Microsoft.SemanticKernel.Diagnostics");
+    using var activity = source.StartActivity("chat.completions gpt-4o-mini", ActivityKind.Client);
+    if (activity is null)
+    {
+        Console.Error.WriteLine("[demo] Tool-call synthetic activity not sampled.");
+        return;
+    }
+
+    activity.SetTag("gen_ai.operation.name", "chat.completions");
+    activity.SetTag("gen_ai.system", "openai");
+    activity.SetTag("gen_ai.request.model", "gpt-4o-mini");
+    activity.SetTag("gen_ai.response.model", "gpt-4o-mini-2024-07-18");
+    activity.SetTag("gen_ai.request.temperature", 0.2);
+    activity.SetTag("gen_ai.usage.input_tokens", 87);
+    activity.SetTag("gen_ai.usage.output_tokens", 24);
+    activity.SetTag("server.address", "api.openai.com");
+
+    activity.AddEvent(new ActivityEvent(
+        "gen_ai.system.message",
+        tags: new ActivityTagsCollection
+        {
+            ["gen_ai.event.content"] = "{\"role\": \"system\", \"content\": \"You can call tools to look up live weather.\"}",
+        }));
+    activity.AddEvent(new ActivityEvent(
+        "gen_ai.user.message",
+        tags: new ActivityTagsCollection
+        {
+            ["gen_ai.event.content"] = "{\"role\": \"user\", \"content\": \"What's the weather in Paris right now?\"}",
+        }));
+    activity.AddEvent(new ActivityEvent(
+        "gen_ai.assistant.message",
+        tags: new ActivityTagsCollection
+        {
+            ["gen_ai.event.content"] = "{\"role\": \"assistant\", \"content\": null, \"tool_calls\": [{\"id\": \"call_abc123\", \"type\": \"function\", \"function\": {\"name\": \"get_weather\", \"arguments\": {\"city\": \"Paris\", \"units\": \"celsius\"}}}]}",
+        }));
+    activity.AddEvent(new ActivityEvent(
+        "gen_ai.tool.message",
+        tags: new ActivityTagsCollection
+        {
+            ["gen_ai.event.content"] = "{\"role\": \"tool\", \"tool_call_id\": \"call_abc123\", \"content\": \"{\\\"temperature_c\\\": 22, \\\"conditions\\\": \\\"Sunny\\\"}\"}",
+        }));
+    activity.AddEvent(new ActivityEvent(
+        "gen_ai.choice",
+        tags: new ActivityTagsCollection
+        {
+            ["gen_ai.event.content"] = "{\"index\": 0, \"message\": {\"role\": \"assistant\", \"content\": \"It is currently 22C and sunny in Paris.\"}, \"tool_calls\": [], \"finish_reason\": \"stop\"}",
+        }));
+
+    Console.WriteLine($"[demo] Synthetic tool-call chat activity id={activity.TraceId}");
+}
+
+static void EmitSyntheticKernelFunctionActivity()
+{
+    using var source = new ActivitySource("Microsoft.SemanticKernel");
+    using var activity = source.StartActivity("get_weather", ActivityKind.Internal);
+    if (activity is null)
+    {
+        Console.Error.WriteLine("[demo] Synthetic kernel function activity not sampled.");
+        return;
+    }
+
+    // Simulates what an IFunctionInvocationFilter would attach in real customer code.
+    activity.SetTag("input.value", "{\"city\":\"Paris\",\"units\":\"celsius\"}");
+    activity.SetTag("input.mime_type", "application/json");
+    activity.SetTag("output.value", "{\"temperature_c\":22,\"conditions\":\"Sunny\"}");
+    activity.SetTag("output.mime_type", "application/json");
+
+    Console.WriteLine($"[demo] Synthetic kernel function activity id={activity.TraceId}");
 }
