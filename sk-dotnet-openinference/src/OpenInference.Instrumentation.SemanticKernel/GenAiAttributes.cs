@@ -8,6 +8,7 @@ namespace OpenInference.Instrumentation.SemanticKernel;
 internal static class GenAiAttributes
 {
     public const string ActivitySourceName = "Microsoft.SemanticKernel.Diagnostics";
+    public const string KernelFunctionActivitySourceName = "Microsoft.SemanticKernel";
 
     public const string System = "gen_ai.system";
     public const string OperationName = "gen_ai.operation.name";

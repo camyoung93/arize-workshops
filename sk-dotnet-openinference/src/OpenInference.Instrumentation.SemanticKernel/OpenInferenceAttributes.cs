@@ -22,6 +22,14 @@ internal static class OpenInferenceAttributes
 
     public const string MessageRoleSuffix = "message.role";
     public const string MessageContentSuffix = "message.content";
+    public const string MessageToolCallsSuffix = "message.tool_calls";
+    public const string MessageToolCallIdSuffix = "message.tool_call_id";
+
+    public const string ToolCallIdSuffix = "tool_call.id";
+    public const string ToolCallFunctionNameSuffix = "tool_call.function.name";
+    public const string ToolCallFunctionArgsSuffix = "tool_call.function.arguments";
+
+    public const string ToolName = "tool.name";
 
     public const string InputValue = "input.value";
     public const string InputMimeType = "input.mime_type";
@@ -32,4 +40,5 @@ internal static class OpenInferenceAttributes
 
     public const string SpanKindLlm = "LLM";
     public const string SpanKindAgent = "AGENT";
+    public const string SpanKindTool = "TOOL";
 }

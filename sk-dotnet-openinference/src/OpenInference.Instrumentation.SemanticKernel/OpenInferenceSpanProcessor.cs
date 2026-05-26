@@ -3,32 +3,32 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using OpenTelemetry;
 
 namespace OpenInference.Instrumentation.SemanticKernel;
 
 /// <summary>
-/// OpenTelemetry SpanProcessor that translates Microsoft.SemanticKernel 1.54 GenAI activities
+/// OpenTelemetry SpanProcessor that translates Microsoft.SemanticKernel 1.54 activities
 /// into OpenInference attributes so they render correctly in Arize AX.
 /// </summary>
 /// <remarks>
 /// <para>Register this processor on the TracerProvider <b>before</b> any exporter so the mutation
 /// lands before the span is exported.</para>
 ///
-/// <para>Mapping (source verified against SK 1.54 ModelDiagnostics.cs):</para>
+/// <para>Two ActivitySources are handled (verified against SK 1.54 source):</para>
 /// <list type="bullet">
-///   <item>ActivitySource <c>Microsoft.SemanticKernel.Diagnostics</c> activities only.</item>
-///   <item><c>gen_ai.operation.name</c> "chat.completions" / "text.completions" -&gt; <c>openinference.span.kind = LLM</c>.</item>
-///   <item><c>gen_ai.operation.name</c> "invoke_agent" -&gt; <c>openinference.span.kind = AGENT</c>.</item>
-///   <item><c>gen_ai.system</c> -&gt; (<c>llm.provider</c>, <c>llm.system</c>) via ProviderMapping.</item>
-///   <item><c>gen_ai.request.model</c>, overridden by <c>gen_ai.response.model</c> -&gt; <c>llm.model_name</c>.</item>
-///   <item><c>gen_ai.usage.input_tokens|output_tokens</c> -&gt; <c>llm.token_count.prompt|completion</c>; total computed if absent.</item>
-///   <item><c>gen_ai.request.{temperature,top_p,max_tokens,frequency_penalty,presence_penalty}</c> packed into <c>llm.invocation_parameters</c> JSON.</item>
-///   <item>Per-message events <c>gen_ai.{system,user,assistant,tool}.message</c> (each carrying a
-///     <c>gen_ai.event.content</c> tag with JSON body) -&gt; <c>llm.input_messages.{i}.message.{role,content}</c> plus
-///     <c>input.value</c> (JSON array) and <c>input.mime_type = application/json</c>.</item>
-///   <item><c>gen_ai.choice</c> events -&gt; <c>llm.output_messages.{i}.message.{role,content}</c> plus
-///     <c>output.value</c> and <c>output.mime_type</c>.</item>
+///   <item><c>Microsoft.SemanticKernel.Diagnostics</c> - LLM / agent model spans from
+///     <c>ModelDiagnostics</c>. Mapped to <c>openinference.span.kind = LLM</c> or <c>AGENT</c>,
+///     plus provider/system/model/tokens/invocation parameters, plus per-message events
+///     (including tool calls and tool result correlation) into
+///     <c>llm.input_messages.*</c> / <c>llm.output_messages.*</c> and
+///     <c>input.value</c> / <c>output.value</c>.</item>
+///   <item><c>Microsoft.SemanticKernel</c> - kernel function invocation spans from
+///     <c>KernelFunction.InvokeAsync</c>. Mapped to <c>openinference.span.kind = TOOL</c>
+///     with <c>tool.name</c> from the activity display name. SK 1.54 does not attach
+///     arguments or return value to these activities; see the README for the
+///     <c>IFunctionInvocationFilter</c> enrichment recipe.</item>
 /// </list>
 /// </remarks>
 public sealed class OpenInferenceSpanProcessor : BaseProcessor<Activity>
@@ -45,43 +45,57 @@ public sealed class OpenInferenceSpanProcessor : BaseProcessor<Activity>
         try
         {
             if (activity == null) return;
-            if (!string.Equals(activity.Source?.Name, GenAiAttributes.ActivitySourceName, StringComparison.Ordinal))
+            var source = activity.Source?.Name;
+            if (source == GenAiAttributes.ActivitySourceName)
             {
-                return;
+                ApplyGenAi(activity);
             }
-
-            var operation = activity.GetTagItem(GenAiAttributes.OperationName) as string;
-            var spanKind = MapSpanKind(operation);
-            if (spanKind is null)
+            else if (source == GenAiAttributes.KernelFunctionActivitySourceName)
             {
-                return;
+                ApplyKernelFunction(activity);
             }
-            activity.SetTag(OpenInferenceAttributes.SpanKind, spanKind);
-
-            if (activity.GetTagItem(GenAiAttributes.System) is string system && !string.IsNullOrEmpty(system))
-            {
-                var (provider, sys) = ProviderMapping.Map(system);
-                activity.SetTag(OpenInferenceAttributes.LlmProvider, provider);
-                activity.SetTag(OpenInferenceAttributes.LlmSystem, sys);
-            }
-
-            var model = activity.GetTagItem(GenAiAttributes.RequestModel) as string;
-            if (activity.GetTagItem(GenAiAttributes.ResponseModel) is string responseModel && !string.IsNullOrEmpty(responseModel))
-            {
-                model = responseModel;
-            }
-            if (!string.IsNullOrEmpty(model))
-            {
-                activity.SetTag(OpenInferenceAttributes.LlmModelName, model);
-            }
-
-            ApplyTokenCounts(activity);
-            ApplyInvocationParameters(activity);
-            ApplyMessageEvents(activity);
         }
         catch (Exception ex)
         {
             Log($"OpenInferenceSpanProcessor.OnEnd swallowed exception: {ex}");
+        }
+    }
+
+    private static void ApplyGenAi(Activity activity)
+    {
+        var operation = activity.GetTagItem(GenAiAttributes.OperationName) as string;
+        var spanKind = MapSpanKind(operation);
+        if (spanKind is null) return;
+        activity.SetTag(OpenInferenceAttributes.SpanKind, spanKind);
+
+        if (activity.GetTagItem(GenAiAttributes.System) is string system && !string.IsNullOrEmpty(system))
+        {
+            var (provider, sys) = ProviderMapping.Map(system);
+            activity.SetTag(OpenInferenceAttributes.LlmProvider, provider);
+            activity.SetTag(OpenInferenceAttributes.LlmSystem, sys);
+        }
+
+        var model = activity.GetTagItem(GenAiAttributes.RequestModel) as string;
+        if (activity.GetTagItem(GenAiAttributes.ResponseModel) is string responseModel && !string.IsNullOrEmpty(responseModel))
+        {
+            model = responseModel;
+        }
+        if (!string.IsNullOrEmpty(model))
+        {
+            activity.SetTag(OpenInferenceAttributes.LlmModelName, model);
+        }
+
+        ApplyTokenCounts(activity);
+        ApplyInvocationParameters(activity);
+        ApplyMessageEvents(activity);
+    }
+
+    private static void ApplyKernelFunction(Activity activity)
+    {
+        activity.SetTag(OpenInferenceAttributes.SpanKind, OpenInferenceAttributes.SpanKindTool);
+        if (!string.IsNullOrEmpty(activity.DisplayName))
+        {
+            activity.SetTag(OpenInferenceAttributes.ToolName, activity.DisplayName);
         }
     }
 
@@ -168,8 +182,8 @@ public sealed class OpenInferenceSpanProcessor : BaseProcessor<Activity>
 
     private static void ApplyMessageEvents(Activity activity)
     {
-        var inputs = new List<MessagePayload>();
-        var outputs = new List<MessagePayload>();
+        var inputs = new List<MessageDto>();
+        var outputs = new List<MessageDto>();
 
         foreach (var ev in activity.Events)
         {
@@ -198,18 +212,12 @@ public sealed class OpenInferenceSpanProcessor : BaseProcessor<Activity>
             if (isChoice)
             {
                 var parsed = TryParseChoice(body!);
-                if (parsed is not null)
-                {
-                    outputs.Add(parsed);
-                }
+                if (parsed is not null) outputs.Add(parsed);
             }
             else
             {
                 var parsed = TryParseMessage(body!, roleFromName!);
-                if (parsed is not null)
-                {
-                    inputs.Add(parsed);
-                }
+                if (parsed is not null) inputs.Add(parsed);
             }
         }
 
@@ -224,67 +232,130 @@ public sealed class OpenInferenceSpanProcessor : BaseProcessor<Activity>
             OpenInferenceAttributes.OutputMimeType);
     }
 
-    private static MessagePayload? TryParseMessage(string json, string fallbackRole)
+    private static MessageDto TryParseMessage(string json, string fallbackRole)
     {
         try
         {
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
-            string role = fallbackRole;
-            if (root.ValueKind == JsonValueKind.Object && root.TryGetProperty("role", out var r) && r.ValueKind == JsonValueKind.String)
-            {
-                role = r.GetString() ?? fallbackRole;
-            }
-            string content = ExtractContent(root);
-            return new MessagePayload(role, content);
+            return BuildMessageDto(root, fallbackRole);
         }
         catch
         {
-            return new MessagePayload(fallbackRole, json);
+            return new MessageDto { Role = fallbackRole, Content = json };
         }
     }
 
-    private static MessagePayload? TryParseChoice(string json)
+    private static MessageDto TryParseChoice(string json)
     {
         try
         {
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
-            if (root.ValueKind != JsonValueKind.Object) return new MessagePayload("assistant", json);
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return new MessageDto { Role = "assistant", Content = json };
+            }
 
             JsonElement msg = root.TryGetProperty("message", out var m) ? m : root;
-            string role = "assistant";
-            if (msg.ValueKind == JsonValueKind.Object && msg.TryGetProperty("role", out var r) && r.ValueKind == JsonValueKind.String)
-            {
-                role = r.GetString() ?? role;
-            }
-            string content = ExtractContent(msg);
-            return new MessagePayload(role, content);
+            return BuildMessageDto(msg, "assistant");
         }
         catch
         {
-            return new MessagePayload("assistant", json);
+            return new MessageDto { Role = "assistant", Content = json };
         }
     }
 
-    private static string ExtractContent(JsonElement element)
+    private static MessageDto BuildMessageDto(JsonElement element, string fallbackRole)
     {
-        if (element.ValueKind != JsonValueKind.Object) return element.ToString();
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return new MessageDto { Role = fallbackRole, Content = element.ToString() };
+        }
+
+        string role = fallbackRole;
+        if (element.TryGetProperty("role", out var r) && r.ValueKind == JsonValueKind.String)
+        {
+            role = r.GetString() ?? fallbackRole;
+        }
+
+        string? content = null;
         if (element.TryGetProperty("content", out var c))
         {
-            return c.ValueKind switch
+            content = c.ValueKind switch
             {
-                JsonValueKind.String => c.GetString() ?? string.Empty,
-                JsonValueKind.Null => string.Empty,
+                JsonValueKind.String => c.GetString(),
+                JsonValueKind.Null => null,
                 _ => c.GetRawText(),
             };
         }
-        return string.Empty;
+
+        string? toolCallId = null;
+        if (element.TryGetProperty("tool_call_id", out var tci) && tci.ValueKind == JsonValueKind.String)
+        {
+            toolCallId = tci.GetString();
+        }
+
+        List<ToolCallDto>? toolCalls = null;
+        if (element.TryGetProperty("tool_calls", out var tcs) && tcs.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var tc in tcs.EnumerateArray())
+            {
+                var parsed = ParseToolCall(tc);
+                if (parsed is null) continue;
+                toolCalls ??= new List<ToolCallDto>();
+                toolCalls.Add(parsed);
+            }
+        }
+
+        return new MessageDto
+        {
+            Role = role,
+            Content = content,
+            ToolCallId = toolCallId,
+            ToolCalls = toolCalls,
+        };
+    }
+
+    private static ToolCallDto? ParseToolCall(JsonElement element)
+    {
+        if (element.ValueKind != JsonValueKind.Object) return null;
+
+        string? id = element.TryGetProperty("id", out var idEl) && idEl.ValueKind == JsonValueKind.String
+            ? idEl.GetString()
+            : null;
+
+        string? name = null;
+        string arguments = "{}";
+        if (element.TryGetProperty("function", out var fn) && fn.ValueKind == JsonValueKind.Object)
+        {
+            if (fn.TryGetProperty("name", out var n) && n.ValueKind == JsonValueKind.String)
+            {
+                name = n.GetString();
+            }
+            if (fn.TryGetProperty("arguments", out var args))
+            {
+                arguments = args.ValueKind switch
+                {
+                    JsonValueKind.String => args.GetString() ?? "{}",
+                    JsonValueKind.Null => "{}",
+                    _ => args.GetRawText(),
+                };
+            }
+        }
+
+        if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(name)) return null;
+
+        return new ToolCallDto
+        {
+            Id = id ?? string.Empty,
+            Function = new ToolFunctionDto { Name = name ?? string.Empty, Arguments = arguments },
+        };
     }
 
     private static void WriteMessages(
         Activity activity,
-        List<MessagePayload> messages,
+        List<MessageDto> messages,
         string prefix,
         string valueKey,
         string mimeKey)
@@ -293,11 +364,39 @@ public sealed class OpenInferenceSpanProcessor : BaseProcessor<Activity>
 
         for (int i = 0; i < messages.Count; i++)
         {
-            activity.SetTag($"{prefix}.{i}.{OpenInferenceAttributes.MessageRoleSuffix}", messages[i].Role);
-            activity.SetTag($"{prefix}.{i}.{OpenInferenceAttributes.MessageContentSuffix}", messages[i].Content);
+            var m = messages[i];
+            activity.SetTag($"{prefix}.{i}.{OpenInferenceAttributes.MessageRoleSuffix}", m.Role);
+
+            if (!string.IsNullOrEmpty(m.Content))
+            {
+                activity.SetTag($"{prefix}.{i}.{OpenInferenceAttributes.MessageContentSuffix}", m.Content);
+            }
+
+            if (!string.IsNullOrEmpty(m.ToolCallId))
+            {
+                activity.SetTag($"{prefix}.{i}.{OpenInferenceAttributes.MessageToolCallIdSuffix}", m.ToolCallId);
+            }
+
+            if (m.ToolCalls is not null)
+            {
+                for (int j = 0; j < m.ToolCalls.Count; j++)
+                {
+                    var tc = m.ToolCalls[j];
+                    var callPrefix = $"{prefix}.{i}.{OpenInferenceAttributes.MessageToolCallsSuffix}.{j}";
+                    if (!string.IsNullOrEmpty(tc.Id))
+                    {
+                        activity.SetTag($"{callPrefix}.{OpenInferenceAttributes.ToolCallIdSuffix}", tc.Id);
+                    }
+                    if (!string.IsNullOrEmpty(tc.Function.Name))
+                    {
+                        activity.SetTag($"{callPrefix}.{OpenInferenceAttributes.ToolCallFunctionNameSuffix}", tc.Function.Name);
+                    }
+                    activity.SetTag($"{callPrefix}.{OpenInferenceAttributes.ToolCallFunctionArgsSuffix}", tc.Function.Arguments);
+                }
+            }
         }
 
-        var serialized = JsonSerializer.Serialize(messages, MessagePayloadJsonContext.Options);
+        var serialized = JsonSerializer.Serialize(messages, MessageJsonContext.Options);
         activity.SetTag(valueKey, serialized);
         activity.SetTag(mimeKey, OpenInferenceAttributes.MimeTypeJson);
     }
@@ -314,14 +413,51 @@ public sealed class OpenInferenceSpanProcessor : BaseProcessor<Activity>
         }
     }
 
-    private sealed record MessagePayload(string Role, string Content);
+    private sealed class MessageDto
+    {
+        [JsonPropertyName("role"), JsonPropertyOrder(0)]
+        public string Role { get; init; } = string.Empty;
 
-    private static class MessagePayloadJsonContext
+        [JsonPropertyName("content"), JsonPropertyOrder(1)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Content { get; init; }
+
+        [JsonPropertyName("tool_calls"), JsonPropertyOrder(2)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<ToolCallDto>? ToolCalls { get; init; }
+
+        [JsonPropertyName("tool_call_id"), JsonPropertyOrder(3)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? ToolCallId { get; init; }
+    }
+
+    private sealed class ToolCallDto
+    {
+        [JsonPropertyName("id"), JsonPropertyOrder(0)]
+        public string Id { get; init; } = string.Empty;
+
+        [JsonPropertyName("type"), JsonPropertyOrder(1)]
+        public string Type => "function";
+
+        [JsonPropertyName("function"), JsonPropertyOrder(2)]
+        public ToolFunctionDto Function { get; init; } = new();
+    }
+
+    private sealed class ToolFunctionDto
+    {
+        [JsonPropertyName("name"), JsonPropertyOrder(0)]
+        public string Name { get; init; } = string.Empty;
+
+        [JsonPropertyName("arguments"), JsonPropertyOrder(1)]
+        public string Arguments { get; init; } = "{}";
+    }
+
+    private static class MessageJsonContext
     {
         public static readonly JsonSerializerOptions Options = new()
         {
             WriteIndented = false,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
     }
 }
