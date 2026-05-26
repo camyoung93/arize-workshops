@@ -7,3 +7,4 @@
 | Cross-App Tracing — Frontend + Backend OTel Demo | [View README](cross-app-tracing/README.md) |
 | Prompt Chaining Experiment — Prompt Lifecycle Quickstart (TypeScript) | [View README](prompt-chaining-experiment/README.md) |
 | Synthetic Spans — Industry-themed synthetic OpenInference trace generators | [View README](synthetic-data/README.md) |
+| Semantic Kernel .NET — OpenInference span processor for Microsoft.SemanticKernel 1.54 | [View README](sk-dotnet-openinference/README.md) |

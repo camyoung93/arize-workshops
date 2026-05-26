@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D3A540F2-AC9E-4781-BD8C-9AD545426CB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenInference.Instrumentation.SemanticKernel", "src\OpenInference.Instrumentation.SemanticKernel\OpenInference.Instrumentation.SemanticKernel.csproj", "{4029C994-CCCA-4115-BD0F-407ED0BA9E42}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{48559647-7B3A-4ED2-A5A8-D5243585399A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkConsoleDemo", "samples\SkConsoleDemo\SkConsoleDemo.csproj", "{50D4F88F-DA3D-457A-B8CF-62907F88A7D0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{8B187D12-94B7-4D5A-AA40-4FB114C08D94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenInference.Instrumentation.SemanticKernel.Tests", "tests\OpenInference.Instrumentation.SemanticKernel.Tests\OpenInference.Instrumentation.SemanticKernel.Tests.csproj", "{5AAFD3EA-F4CD-4086-B0C3-4BAADDE26410}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4029C994-CCCA-4115-BD0F-407ED0BA9E42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4029C994-CCCA-4115-BD0F-407ED0BA9E42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4029C994-CCCA-4115-BD0F-407ED0BA9E42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4029C994-CCCA-4115-BD0F-407ED0BA9E42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50D4F88F-DA3D-457A-B8CF-62907F88A7D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50D4F88F-DA3D-457A-B8CF-62907F88A7D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50D4F88F-DA3D-457A-B8CF-62907F88A7D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50D4F88F-DA3D-457A-B8CF-62907F88A7D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AAFD3EA-F4CD-4086-B0C3-4BAADDE26410}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AAFD3EA-F4CD-4086-B0C3-4BAADDE26410}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AAFD3EA-F4CD-4086-B0C3-4BAADDE26410}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AAFD3EA-F4CD-4086-B0C3-4BAADDE26410}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4029C994-CCCA-4115-BD0F-407ED0BA9E42} = {D3A540F2-AC9E-4781-BD8C-9AD545426CB6}
+		{50D4F88F-DA3D-457A-B8CF-62907F88A7D0} = {48559647-7B3A-4ED2-A5A8-D5243585399A}
+		{5AAFD3EA-F4CD-4086-B0C3-4BAADDE26410} = {8B187D12-94B7-4D5A-AA40-4FB114C08D94}
+	EndGlobalSection
+EndGlobal
