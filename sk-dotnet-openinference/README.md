@@ -244,6 +244,25 @@ as SK evolves; they're listed here so the AX render isn't surprising:
   obsolete overload for this reason; should be revisited when SK wires
   activity emission into the newer path.
 
+### Streaming
+
+Streaming chat completions (`GetStreamingChatMessageContentsAsync`) are
+supported transparently by the processor. SK 1.54 starts the chat activity
+once at the beginning of the call, accumulates the streamed chunks
+internally, and at the end calls
+[`activity.EndStreaming(streamedContents, ...)`](https://github.com/microsoft/semantic-kernel/blob/dotnet-1.54.0/dotnet/src/Connectors/Connectors.OpenAI/Core/ClientCore.ChatCompletion.cs#L365)
+which routes through the same `SetCompletionResponse` path the
+non-streaming call uses. By the time the activity ends, the tags and
+`gen_ai.choice` event look identical to a non-streaming call (aggregated
+token counts, single assistant message built from the chunks). The
+processor's `OnEnd` cannot tell the two apart.
+
+What you do **not** get is token-by-token rendering of the response in AX
+while the stream is in flight - OTel ships spans as completed units, not
+incremental updates. AX shows the trace after the activity ends. If
+live-token display matters for the customer UX, that belongs in the app's
+own UI layer, not the trace viewer.
+
 ## Usage
 
 ```csharp
@@ -388,6 +407,39 @@ nothing more. Known things explicitly out of scope:
   metadata about what the agent is, not what was asked this turn (so it is
   intentionally not mapped to `input.value`).
 - DI registration helpers, retries, config systems, multiple processor instances.
+
+## Adapting this to a real .NET app
+
+The sample is a single-file console quickstart. Four things to change when
+lifting the wiring into a hosted ASP.NET Core / worker service:
+
+1. **Drop the `ENABLE_OPENINFERENCE_PROCESSOR` toggle.** It exists in the
+   sample only so you can compare with/without translation. In a real app
+   the processor is always on - just one `.AddProcessor(new OpenInferenceSpanProcessor())`
+   line on the `TracerProviderBuilder`, no conditional.
+2. **Move the diagnostics switches into configuration.** Set
+   `SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE=true`
+   via env var, launch profile, or `appsettings.json` rather than calling
+   `AppContext.SetSwitch` in `Program.cs`. The flag still needs to be set
+   before SK loads; configuration sources read at host startup are early
+   enough.
+3. **Split `service.name` from the Arize project name.** The sample
+   conflates them as `projectName` for brevity. In a real deployment,
+   `service.name` is per-process (e.g. `weather-api`) and the Arize project
+   is a logical grouping (e.g. `weather-prod`); they should be separate
+   config values bound via `IConfiguration`.
+4. **Read all secrets and endpoints from `IConfiguration` rather than
+   `Environment.GetEnvironmentVariable`.** That gives you `appsettings.json`
+   + environment-variable overrides + secret-manager integration
+   (Azure Key Vault, etc.) for free. The sample uses raw env vars only
+   because it has no host.
+
+Other things the sample omits that production code would add
+(`ILoggerFactory` passed into the SK connector, `CancellationToken`
+plumbing into `agent.InvokeAsync`, retry / error handling around the LLM
+call, graceful `TracerProvider` shutdown via `IHost`) are standard
+console-vs-service tradeoffs - none of them affect what the processor does
+or how spans render in AX.
 
 ## Verification
 
