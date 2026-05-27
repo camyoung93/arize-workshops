@@ -257,6 +257,58 @@ non-streaming call uses. By the time the activity ends, the tags and
 token counts, single assistant message built from the chunks). The
 processor's `OnEnd` cannot tell the two apart.
 
+## Upstream SK improvements since 1.54
+
+Current SK .NET on NuGet is **1.76.0**. The customer pin of 1.54 is 22
+minor versions out of date. A few of the limitations documented above are
+already fixed upstream; this section tracks them so the processor can be
+extended (and the workaround recipes can be removed) once the customer
+upgrades.
+
+**Kernel function span enrichment - fixed in SK 1.70+.** PR
+[microsoft/semantic-kernel#13241](https://github.com/microsoft/semantic-kernel/pull/13241)
+(merged Oct 23, 2025) reshapes the `KernelFunction` activity to use
+`gen_ai.operation.name = "execute_tool"` and adds the following tags
+directly to the span:
+
+| New tag (SK 1.70+)              | Notes |
+| ------------------------------- | ----- |
+| `gen_ai.tool.name`              | Function name, redundant with `activity.DisplayName` |
+| `gen_ai.tool.description`       | Description from the `[Description]` attribute on the C# method |
+| `gen_ai.tool.call.arguments`    | Serialized `KernelArguments`, only when `EnableOTelDiagnosticsSensitive=true` |
+| `gen_ai.tool.call.result`       | Serialized return value, only when sensitive events are on |
+
+On SK 1.70+ this **eliminates the need for the
+[`IFunctionInvocationFilter` enrichment recipe](#enriching-kernel-function-spans-optional)**
+above. The processor will need a small update to map the four new tags
+into the OpenInference `tool.*` / `input.value` / `output.value` namespace
+(roughly 10 lines in `ApplyKernelFunction`); verified absent in SK 1.66,
+present in 1.70.
+
+**Still not fixed in SK HEAD (1.76 line).** These limitations from the
+[SK 1.54 limitations](#sk-154-limitations) section persist in HEAD:
+
+- `gen_ai.response.model` is declared but never written by
+  `ModelDiagnostics`, so `llm.model_name` continues to land as the request
+  model rather than the dated revision the API returns.
+- `gen_ai.tool.message` events still carry only `role` + `content`. The
+  assistant-call to tool-response correlation
+  (`llm.input_messages.{i}.message.tool_call_id`) is still absent on real
+  traces, even though `FunctionResultContent.CallId` is available.
+- The non-obsolete `ChatCompletionAgent.InvokeAsync(ICollection,
+  AgentThread, AgentInvokeOptions)` overload still does not wrap the call
+  in an `invoke_agent` activity. The sample still has to use the
+  `[Obsolete]` overload to get the AGENT-rooted trace tree.
+
+The processor already handles all three correctly when SK starts writing
+the missing data; no code changes will be needed for those.
+
+**Direction.** Semantic Kernel is being folded into the broader
+[Microsoft Agent Framework](https://devblogs.microsoft.com/agent-framework/),
+which standardizes on `invoke_agent` as the primary entrypoint. The
+processor's existing AGENT-kind mapping should carry over with little or
+no change; worth a re-audit once the customer evaluates that path.
+
 ## Usage
 
 ```csharp
