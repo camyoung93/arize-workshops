@@ -101,8 +101,13 @@ var agent = new ChatCompletionAgent
     }),
 };
 
+var userQuery = args.Length > 0
+    ? string.Join(" ", args)
+    : "What's the weather in Paris right now?";
+Console.WriteLine($"[demo] User: {userQuery}");
+
 var history = new ChatHistory();
-history.AddUserMessage("What's the weather in Paris right now?");
+history.AddUserMessage(userQuery);
 
 // The (ChatHistory, KernelArguments, Kernel) overload is [Obsolete] but is the
 // path that emits the invoke_agent activity in SK 1.54. Once the customer is on
