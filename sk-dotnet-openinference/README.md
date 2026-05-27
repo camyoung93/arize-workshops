@@ -257,12 +257,6 @@ non-streaming call uses. By the time the activity ends, the tags and
 token counts, single assistant message built from the chunks). The
 processor's `OnEnd` cannot tell the two apart.
 
-What you do **not** get is token-by-token rendering of the response in AX
-while the stream is in flight - OTel ships spans as completed units, not
-incremental updates. AX shows the trace after the activity ends. If
-live-token display matters for the customer UX, that belongs in the app's
-own UI layer, not the trace viewer.
-
 ## Usage
 
 ```csharp
