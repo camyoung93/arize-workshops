@@ -86,6 +86,18 @@ Empty/null `content` (e.g. an assistant message that is only a tool call) is
 omitted from both the indexed `message.content` tag and the `input.value` /
 `output.value` JSON, rather than emitted as `""`.
 
+The `tool_call_id?` and `tool_calls?` markers describe what the processor
+handles, not what SK 1.54 actually emits. See [SK 1.54 limitations](#sk-154-limitations)
+below for the specific gaps (notably `tool_call_id` on `gen_ai.tool.message`
+events and `gen_ai.response.model` on the activity).
+
+For `invoke_agent` activities the processor also passes through SK's
+`gen_ai.agent.id` / `gen_ai.agent.name` / `gen_ai.agent.description` tags
+unchanged. They are not remapped to OpenInference-prefixed attributes
+because AX already renders the `gen_ai.agent.*` namespace natively in the
+span Attributes panel. The AGENT span has no `input.value` / `output.value`
+in SK 1.54; see [Enriching invoke_agent spans](#enriching-invoke_agent-spans-optional).
+
 ### Kernel function spans (ActivitySource `Microsoft.SemanticKernel`)
 
 | SK                                                | OpenInference                                              |
@@ -95,20 +107,19 @@ omitted from both the indexed `message.content` tag and the `input.value` /
 
 **SK 1.54 limitation.** `KernelFunction.InvokeAsync` calls
 `s_activitySource.StartActivity(this.Name)` and adds **no tags** about the
-arguments or return value. The translated `TOOL` span therefore renders with
-only `tool.name` populated. The richer per-call payload lives inside the
-parent LLM span's `gen_ai.tool.message` event body, which the processor
-already exposes via `llm.input_messages.{i}.message.tool_call_id` + `.content`
-on the LLM span. This is a Semantic Kernel limitation, not an Arize AX
-limitation; see [Enriching kernel function spans](#enriching-kernel-function-spans-optional)
-below for the recommended fix on the customer side.
+arguments or return value, so the translated `TOOL` span renders with only
+`tool.name`. The richer per-call payload lives inside the parent LLM span's
+`gen_ai.tool.message` event body, which the processor exposes via
+`llm.input_messages.{i}.message.content` (and `.tool_call_id` when SK emits
+it). To populate the `TOOL` span itself, see
+[Enriching kernel function spans](#enriching-kernel-function-spans-optional).
 
 ### Enriching kernel function spans (optional)
 
 To make a `TOOL` span carry the function's actual input and output, register
-an `IFunctionInvocationFilter` in the customer's kernel that attaches them to
-`Activity.Current` before the processor sees the span. The processor will
-leave any pre-existing `input.value` / `output.value` tags alone:
+an `IFunctionInvocationFilter` that attaches them to `Activity.Current`
+before the processor sees the span. The processor leaves any pre-existing
+`input.value` / `output.value` tags alone:
 
 ```csharp
 using System.Diagnostics;
@@ -142,23 +153,96 @@ kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter, TraceFunctionFilt
 With this filter wired, the `TOOL` span in AX renders with the function name,
 arguments, and return value.
 
-### Departures from the original handoff
+### Enriching `invoke_agent` spans (optional)
 
-The customer-facing handoff was based on the OpenLIT span shape. SK 1.54 differs:
+SK 1.54's `StartAgentInvocationActivity` only attaches
+`gen_ai.agent.{id, name, description}` to the AGENT span. It does **not**
+write the user's input or the agent's final response, so AX's Input / Output
+tab on an AGENT span is empty by default. The processor deliberately does
+not paper over this by mapping `description` into `input.value`; description
+is static metadata about what the agent is, not what was asked this turn,
+and forcing it into the input slot would mislead anyone filtering or
+searching traces by user input.
 
-- Operation values are `"chat.completions"` / `"text.completions"`, not `"chat"` / `"text_completion"`.
+If you want the Input / Output tab populated, wrap the call so the actual
+`ChatHistory` and final response land on `Activity.Current`:
+
+```csharp
+using System.Diagnostics;
+using System.Linq;
+using System.Text.Json;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
+
+static async Task<ChatMessageContent?> InvokeWithIoAsync(
+    ChatCompletionAgent agent,
+    ChatHistory history)
+{
+    var activity = Activity.Current;
+    activity?.SetTag("input.value", JsonSerializer.Serialize(
+        history.Select(m => new { role = m.Role.Label, content = m.Content })));
+    activity?.SetTag("input.mime_type", "application/json");
+
+    ChatMessageContent? final = null;
+    await foreach (var msg in agent.InvokeAsync(history))
+    {
+        final = msg;
+    }
+
+    if (activity is not null && final is not null)
+    {
+        activity.SetTag("output.value", JsonSerializer.Serialize(
+            new { role = final.Role.Label, content = final.Content }));
+        activity.SetTag("output.mime_type", "application/json");
+    }
+    return final;
+}
+```
+
+The helper runs inside the `invoke_agent` activity's scope (started by
+`agent.InvokeAsync`), so `Activity.Current` is the AGENT span when the tags
+are set. The processor leaves any pre-existing `input.value` / `output.value`
+tags alone, so the explicit user-supplied values win.
+
+### SK 1.54 limitations
+
+A few attributes the OTel GenAI semconv defines aren't populated by SK 1.54.
+The processor handles each one when present, so these resolve automatically
+as SK evolves; they're listed here so the AX render isn't surprising:
+
+- Operation values are `"chat.completions"` / `"text.completions"`, not
+  `"chat"` / `"text_completion"`.
 - SK does **not** emit `gen_ai.content.prompt` / `gen_ai.content.completion`
   with JSON-array bodies. It emits one event per message
   (`gen_ai.user.message`, `gen_ai.choice`, etc.), each carrying a
   `gen_ai.event.content` tag with the JSON body.
-- SK only emits `temperature`, `top_p`, `max_tokens` invocation params.
-  The processor still picks up `frequency_penalty` / `presence_penalty` if
-  another emitter ever produces them, but SK won't.
-- SK 1.54 sets `gen_ai.system = "openai"` for both the OpenAI and Azure OpenAI
-  connectors. The `"az.ai.openai"` branch is dead code today but kept for
-  forward compatibility.
-- Kernel function spans are bare (display name only); see the SK 1.54
-  limitation note in the Kernel function spans table above.
+- SK only emits `temperature`, `top_p`, `max_tokens` invocation params. The
+  processor picks up `frequency_penalty` / `presence_penalty` too, but SK
+  doesn't produce them.
+- `gen_ai.system = "openai"` is set for both the OpenAI and Azure OpenAI
+  connectors. So Azure runs render as `llm.provider = "openai"`, not
+  `"azure"`, in AX cost dashboards and span filters. The `"az.ai.openai"`
+  branch in the processor is dead code today, kept for forward compatibility.
+- `gen_ai.response.model` is declared in SK's `ModelDiagnosticsTags` but
+  never written by `ModelDiagnostics`. So `llm.model_name` lands as the
+  request model (e.g. `gpt-4o-mini`), not the dated revision
+  (`gpt-4o-mini-2024-07-18`) the OpenAI API actually returns. The
+  `response.model` preference path in the processor is dead code in 1.54.
+- `gen_ai.tool.message` events carry `role` + `content` only. SK 1.54 does
+  **not** include `tool_call_id` even though `FunctionResultContent.CallId`
+  is available, so the assistant-call → tool-response correlation
+  (`llm.input_messages.{i}.message.tool_call_id`) is absent on real traces.
+- Kernel function spans are bare (display name only); see the table above.
+- AGENT spans (`invoke_agent`) carry only `gen_ai.agent.{id, name, description}`.
+  No `input.value` / `output.value`, no token totals across the agent
+  invocation. See [Enriching invoke_agent spans](#enriching-invoke_agent-spans-optional).
+- The (non-obsolete) `ChatCompletionAgent.InvokeAsync(ICollection,
+  AgentThread, AgentInvokeOptions)` overload does **not** wrap the call in
+  an `invoke_agent` activity in 1.54. Only the `[Obsolete]`
+  `InvokeAsync(ChatHistory, KernelArguments, Kernel)` overload calls
+  `ModelDiagnostics.StartAgentInvocationActivity`. The sample uses the
+  obsolete overload for this reason; should be revisited when SK wires
+  activity emission into the newer path.
 
 ## Usage
 
@@ -179,11 +263,51 @@ using var tracer = Sdk.CreateTracerProviderBuilder()
     .Build();
 ```
 
+## Why `ChatCompletionAgent` (and not `IChatCompletionService`)
+
+The sample uses `Microsoft.SemanticKernel.Agents.ChatCompletionAgent`
+rather than calling `IChatCompletionService.GetChatMessageContentAsync`
+directly. Both flows go through the same processor; the difference is the
+trace shape SK actually produces.
+
+**Calling `IChatCompletionService` directly** with `FunctionChoiceBehavior.Auto()`
+produces three orphan root spans per turn:
+
+```
+chat.completions gpt-4o     (LLM, root)
+GetWeather                  (TOOL, root)
+chat.completions gpt-4o     (LLM, root)
+```
+
+This is because SK 1.54 ends the first `chat.completions` activity when the
+API call returns, dispatches the auto-invoke loop outside that activity's
+scope, and starts a fresh activity for the second API call. The processor
+can't fix this; it's structural to how SK breaks up its work.
+
+**Calling through `ChatCompletionAgent.InvokeAsync(ChatHistory, ...)` instead**
+wraps the whole conversation in a `gen_ai.operation.name = invoke_agent`
+activity, which the processor maps to `openinference.span.kind = AGENT`.
+That gives the conventional tree:
+
+```
+invoke_agent WeatherConcierge   (AGENT, root)
+├── chat.completions gpt-4o     (LLM)
+├── GetWeather                  (TOOL, tool.name=GetWeather)
+└── chat.completions gpt-4o     (LLM)
+```
+
+Adoption cost on the customer side is small: wrap an existing
+`IChatCompletionService` user in `ChatCompletionAgent { Kernel = ..., Arguments = ... }`
+and switch the call site. Plugins and `FunctionChoiceBehavior.Auto()` work
+identically.
+
+If raw `IChatCompletionService` usage cannot be changed, the customer can
+wrap each request handler in their own outer `ActivitySource.StartActivity`
+to get a shared parent across the three orphan spans. The processor will
+ignore that wrapping activity (different source name), so its only effect
+is providing a parent.
+
 ## Run the sample
-
-Two modes; both honour the diagnostics switches and the Arize OTLP exporter.
-
-### Live LLM mode
 
 Set Azure OpenAI **or** OpenAI direct creds, plus the Arize creds:
 
@@ -203,21 +327,16 @@ export ENABLE_OPENINFERENCE_PROCESSOR=true
 dotnet run --project samples/SkConsoleDemo
 ```
 
-### Synthetic mode (no LLM call)
+The sample registers a small `WeatherPlugin`, wraps the call in a
+`ChatCompletionAgent`, and uses `FunctionChoiceBehavior.Auto()`. A single
+run lands one trace in AX containing the AGENT root, two child
+`chat.completions` LLM spans, and the auto-invoked `GetWeather` TOOL span.
 
-Use this to verify the OTLP path and AX rendering without spending tokens:
-
-```bash
-export SYNTHETIC=true
-export ENABLE_OPENINFERENCE_PROCESSOR=true
-export ARIZE_SPACE_ID="..."
-export ARIZE_API_KEY="..."
-dotnet run --project samples/SkConsoleDemo
-```
-
-A hand-crafted SK-shaped activity is emitted on the
-`Microsoft.SemanticKernel.Diagnostics` source, run through the processor, and
-shipped to Arize.
+The TOOL span carries only `tool.name` by default (SK 1.54 limitation); the
+AGENT span has empty Input / Output (SK 1.54 limitation). Two optional
+wiring recipes ([function filter](#enriching-kernel-function-spans-optional),
+[agent wrapper](#enriching-invoke_agent-spans-optional)) populate them
+without modifying the processor.
 
 ### Inspect raw SK spans without the processor
 
@@ -259,28 +378,40 @@ nothing more. Known things explicitly out of scope:
   instead; swap in if Arize blesses that package).
 - Package name `OpenInference.Instrumentation.SemanticKernel` is a placeholder
   pending Arize naming review.
-- Enriching kernel function spans with arguments / return value. SK 1.54
-  doesn't put these on the activity; the recommended workaround
-  (`IFunctionInvocationFilter`) is documented above and lives on the customer
-  side, not in this processor.
-- `agent.*` attributes on `invoke_agent` activities (SK emits `gen_ai.agent.id`
-  / `gen_ai.agent.name` / `gen_ai.agent.description`; processor currently maps
-  only the LLM-shaped tags on those spans).
+- Enriching `TOOL` and `AGENT` spans with their actual input / output. SK 1.54
+  doesn't put these on the activity; both recipes (`IFunctionInvocationFilter`
+  for TOOL, agent-wrapper helper for AGENT) live in the customer's application
+  code, not in this processor, because they require access to the
+  `KernelArguments` / `ChatHistory` only the caller has.
+- Remapping `gen_ai.agent.*` into OpenInference-prefixed attributes. AX
+  renders the `gen_ai.agent.*` namespace natively, and `description` is
+  metadata about what the agent is, not what was asked this turn (so it is
+  intentionally not mapped to `input.value`).
 - DI registration helpers, retries, config systems, multiple processor instances.
 
 ## Verification
 
-Demo trace (synthetic mode) sent to Arize space `LLM_test`, project
-`sk-dotnet-openinference-demo`. AX rendered:
+Demo traces land in Arize space `LLM_test`, project
+`sk-dotnet-openinference-demo`. One end-to-end scenario exercised:
 
-- Span kind `LLM`
-- Model `gpt-4o-mini-2024-07-18` (response.model overrode request.model)
-- Token counts (23 / 12 / 35), invocation parameters JSON
-- Both input and output message panels populated
-- Cost computed automatically by AX from model + token attribution
+**Agent + tool-call flow.** Real SK 1.54 call through
+`ChatCompletionAgent` against Azure OpenAI, with `WeatherPlugin`
+registered and `FunctionChoiceBehavior.Auto()` enabled. AX renders a
+single trace tree:
 
-The tool-call and `TOOL` span-kind translations have been verified at the
-unit-test level (xUnit) but not yet round-tripped to AX. The synthetic mode
-in `samples/SkConsoleDemo` does not currently emit a tool-call scenario or a
-kernel function span - extending it is a quick follow-up if a live AX render
-of those is needed.
+```
+invoke_agent WeatherConcierge   (AGENT, root)
+├── chat.completions gpt-4o     (LLM)
+├── GetWeather                  (TOOL, tool.name=GetWeather)
+└── chat.completions gpt-4o     (LLM)
+```
+
+The LLM spans carry full `llm.input_messages.*` / `llm.output_messages.*`
+panels including the assistant tool-call (with `tool_calls.0.tool_call.*`
+attributes) and the tool-role response. Token counts and invocation
+parameters land on both LLM spans; AX auto-computes cost from
+`llm.model_name` + token counts.
+
+The AGENT span has only `gen_ai.agent.{id, name, description}` populated;
+the TOOL span has only `tool.name`. Both are SK 1.54 structural limitations
+documented above with concrete enrichment recipes.
