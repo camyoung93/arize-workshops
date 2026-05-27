@@ -322,22 +322,27 @@ is providing a parent.
 
 ## Run the sample
 
-Set Azure OpenAI **or** OpenAI direct creds, plus the Arize creds:
+The full list of environment variables (and their defaults) lives in
+[`.env.example`](.env.example). Copy it to `.env`, fill in the credentials
+you have, and source it before running. .NET console apps don't auto-load
+`.env` files the way Python and Node demos do, so the sourcing step is
+explicit:
 
 ```bash
-export AZURE_OPENAI_ENDPOINT="https://your.openai.azure.com"
-export AZURE_OPENAI_API_KEY="..."
-export AZURE_OPENAI_DEPLOYMENT="gpt-4o-mini"
-# OR
-export OPENAI_API_KEY="sk-..."
-export OPENAI_MODEL="gpt-4o-mini"
-
-export ARIZE_SPACE_ID="..."
-export ARIZE_API_KEY="..."
-export ARIZE_PROJECT_NAME="sk-dotnet-openinference-demo"
-export ENABLE_OPENINFERENCE_PROCESSOR=true
-
+cp .env.example .env
+# edit .env with your Azure OpenAI or OpenAI key, plus Arize space/key
+set -a && source .env && set +a
 dotnet run --project samples/SkConsoleDemo
+```
+
+(`set -a` exports every variable defined while it's active; `set +a` turns
+that back off after the source.)
+
+Pass a question as a positional arg to override the default
+("What's the weather in Paris right now?"):
+
+```bash
+dotnet run --project samples/SkConsoleDemo -- "What's the weather in Tokyo, and how does it compare to Reykjavik?"
 ```
 
 The sample registers a small `WeatherPlugin`, wraps the call in a
