@@ -1,14 +1,82 @@
 # StreamFlix synthetic data
 
-Synthetic data demos for StreamFlix prospect spaces.
+Synthetic data demos for StreamFlix prospect spaces. Two independent tracks:
+
+1. **Search Augment (GenAI)** — OpenInference traces for a search-augment
+   recommendation pipeline, plus registered LLM-as-judge evaluators and
+   continuous eval tasks.
+2. **Feature Store Monitoring (classic ML)** — 30 days of offline/online
+   feature snapshots with seeded drift.
 
 ## Contents
 
 | Artifact | Description |
 |----------|-------------|
-| `synthetic_spans_streamflix_search_augment.ipynb` | Search augment traces (catalog, reranking, personalized response) — OpenInference spans |
+| `generate_traces.py` | Search-augment OpenInference traces (catalog, reranking, personalized response), grouped into sessions |
+| `create_evaluators.py` | Registers 4 LLM-as-judge evaluators (span / trace / session) |
+| `create_tasks.py` | Creates 3 continuous eval tasks wiring the evaluators to spans |
+| `run_evals.py` | Triggers a task over a time window and waits for results |
+| `templates/` | Synthetic world data (queries, catalog, scenarios, profiles) + LLM prompt template |
+| `EVALUATORS.md` | Evaluator/task reference: filters, mappings, caveats |
 | `streamflix_feature_store_ingest.py` | **Feature Store Monitoring (SDK v8)** — 30 days of offline/online feature snapshots; requires Python 3.10+ |
 | `streamflix_feature_store_ingest_v7.py` | **Feature Store Monitoring (SDK v7)** — same as above for arize 7.x; use `requirements-v7.txt` and any Python 3.8+ |
+
+---
+
+## StreamFlix Search Augment
+
+### Overview
+
+Each trace is one user query through the recommendation pipeline (all content
+synthetic — no retrieval system, reranker, or LLM is invoked; OpenInference
+attributes are written directly):
+
+```
+StreamFlix Search Augment Pipeline        [CHAIN, root]
+  ├── candidate_retrieval                  [RETRIEVER]  catalog first-pull with scores
+  ├── rerank_candidates                    [RERANKER]   top picks passed to the LLM
+  └── search_augment_agent                 [AGENT]
+        ├── fetch_user_history             [RETRIEVER]  user profile / watch history
+        └── personalize_recommendations    [LLM]        personalized picks
+```
+
+Traces are grouped into sessions of 2-5 (`session.id` on the CHAIN/AGENT/LLM
+spans). Default project: `streamflix_search_augment`.
+
+### Setup
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # set ARIZE_SPACE_ID / ARIZE_API_KEY
+```
+
+`create_evaluators.py` additionally needs `ARIZE_AI_INTEGRATION_NAME` — the
+display name of an AI integration in your space (app.arize.com → Space
+settings → AI Integrations).
+
+### Run order
+
+```bash
+# 1. Traces — smoke-test one, then the full batch
+python generate_traces.py --test
+python generate_traces.py                # 500 traces
+
+# 2. Register the LLM-as-judge evaluators
+python create_evaluators.py --dry-run
+python create_evaluators.py
+
+# 3. Create the continuous eval tasks (span / trace / session)
+python create_tasks.py
+
+# 4. Backfill evals over existing traces (continuous tasks only score new ones)
+python run_evals.py --task "StreamFlix - LLM Evals" --days 1
+python run_evals.py --task "StreamFlix - Trace Evals" --days 1
+python run_evals.py --task "StreamFlix - Session Evals" --days 1
+```
+
+See `EVALUATORS.md` for the evaluator/task reference and caveats (exact-match
+span filters, session `{conversation}` mapping, backfill behavior).
 
 ---
 
